@@ -6,10 +6,13 @@ s.options.device = "Soundflower (64ch)"
 *
 * TODO: 1. ControlBus controll detuning
 * 2. individual outs rather than stereo out
-* 3. (Python) automate code to extract ALL bloodsugar samples. cleanup
+* 3. (Python) automate code to extract ALL bloodsugar samples. 
 * 4. general cleanup
+***** a) make synth into class.
 * 5. create git
 * 6. create nanokontrol/pad-control
+* 7. Use interpolating Osc UGen instead... (buffer -> signal -> asWavetable)?
+* 8. use ambisonics instead...?
 *
 * ® Karl Johannes Jondell
 */
@@ -35,13 +38,13 @@ s.meter;
         \instrument, \diabetes,
         \degree, Prand([1,2,3,4,5,6], repeats:inf),
         \octave, 3,
-        \root, 9,
-        \bufL, Pwrand([0,1,2], [3,2,3].normalizeSum, inf), 
-        \bufR, Pwrand([2,3,4], [5,2,1].normalizeSum, inf), 
+        \root, 0,
+        \bufL, Prand([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14], inf), 
+        \bufR, Prand([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14], inf), 
         \outL, Prand([0,1,2,3,4,5,6], inf),
         \scale, Scale.whole,
-        \rel, Pwhite(1.4,3,inf),
-        \dur, Pxrand([1/2,1/3,1/8]/0.8, repeats:inf)
+        \rel, Pwhite(0.8,3,inf),
+        \dur, Pxrand([1/2,1/3,1/8]/2, repeats:inf)
     ).play;
 )
 
