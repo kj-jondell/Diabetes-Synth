@@ -11,8 +11,9 @@ s.options.device = "Soundflower (64ch)"
 ***** a) make synth into class.
 * 5. create git
 * 6. create nanokontrol/pad-control
-* 7. Use interpolating Osc UGen instead... (buffer -> signal -> asWavetable)?
+* 7. Use interpolating Osc UGen (VOsc...) instead... (buffer -> signal -> asWavetable)?
 * 8. use ambisonics instead...?
+* 9. granular synth or wavetable???
 *
 * ® Karl Johannes Jondell
 */
@@ -22,8 +23,8 @@ s.options.device = "Soundflower (64ch)"
         \diabetesgrain,
         {
             arg freq = 440, rel = 0.1, bufL = 1, t_trig = 1, bufR = 2, outL = 0, outR = 1;
-            var sigL = BufGrain.ar(t_trig, 2, bufL, rate: 2.00);
-            var sigR = BufGrain.ar(t_trig, 2, bufR, rate: 2.04);
+            var sigL = BufGrain.ar(t_trig, 2, bufL, rate: 2.00); //Can only control rate(!)
+            var sigR = BufGrain.ar(t_trig, 2, bufR, rate: 2.04); //Can only control rate(!)
             var env = EnvGen.kr(Env.perc(releaseTime:rel), doneAction: Done.freeSelf);
             Out.ar(outL,env*[sigL,sigR]);
         }
