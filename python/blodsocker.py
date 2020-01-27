@@ -1,3 +1,4 @@
+### Interpreter of blood glucose data from Abbot FreeStyle Libre. Spline interpolation and ouptut of 1024 sample wav-file.
 ### TODO: Cleanup code
 
 from dateutil import parser
