@@ -7,6 +7,7 @@ from dateutil import parser
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
+from scipy import signal
 import soundfile as sf
 
 SAMPLE_RATE = 48000
@@ -36,6 +37,9 @@ with open('python/blodsocker.txt', 'r') as reader:
             sample.append(interpolate.splev(x,tck))
         sample = [(x-min(sample)) for x in sample]
         sample = [ 2*(x/max(sample)-0.5) for x in sample] #normalize and center sound
+        window = signal.tukey(BUFFER_SIZE, 0.1) #window function
+        for ind, w_sample in enumerate(window):
+            sample[ind] = sample[ind]*w_sample
 
         sf.write('samples/blodsocker{}.wav'.format(sampleIndex+1), sample, SAMPLE_RATE)
 
