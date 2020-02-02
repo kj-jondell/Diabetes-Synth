@@ -20,6 +20,7 @@ s.options.device = "Soundflower (64ch)"
 
 b = SoundFile.collectIntoBuffers("/Users/kj/Documents/school/supercollider/projects/diabetes/samples/*") //No interpolation
 b = SoundFile.collectIntoBuffers("/Users/kj/Documents/school/supercollider/projects/diabetes/samples/wavetable/*") //WAVETABLE interpolation
+b = SoundFile.collectIntoBuffers("/Users/kj/Documents/school/supercollider/projects/diabetes/samples/wavetable2048/*") //WAVETABLE interpolation (2048 buffers)
 
 //GRANULAR
 (
@@ -35,13 +36,15 @@ b = SoundFile.collectIntoBuffers("/Users/kj/Documents/school/supercollider/proje
     ).add;
 )
 //WAVETABLE (interpolating)
+//TODO: controlbus for detuning AND buffernr
+//Vosc3 for detuning
+//map velocity to amplitude and filter differently
 (
     SynthDef.new(
         \diabetes,
         {
-            arg freq = 440, velocity = 67, attack = 0.01, rel = 0.1, buf = 1, /*bufR = 2, outL = 0, outR = 1,*/ pan = 0;
+            arg freq = 440, velocity = 67, attack = 0.01, rel = 0.1, buf = 1, pan = 0;
             var sig = VOsc.ar(buf, freq:freq, mul: velocity/150);
-            //var sigR = OscN.ar(bufR, freq*1.01);
             var env = EnvGen.kr(Env.perc(attackTime: attack, releaseTime:rel), doneAction: Done.freeSelf);
             var filter = LPF.ar((env*sig), freq*velocity.linlin(0,127,0.75,12));
             Out.ar(pan,filter);
@@ -50,9 +53,11 @@ b = SoundFile.collectIntoBuffers("/Users/kj/Documents/school/supercollider/proje
 )
 
 //DIABETES DRONE
-x = Synth.new(\diabetes, [\attack,10,\rel,100,\velocity,120,\pan,2,\freq,220,\buf,Rand(1,14)])
-x = Synth.new(\diabetes, [\attack,10,\rel,200,\velocity,60.rand+60,\pan,10.rand,\freq,154.1,\buf,14.0.rand])
-x = Synth.new(\diabetes, [\attack,10,\rel,200,\velocity,60.rand+60,\pan,1,\freq,220,\buf,14.0.rand])
+x = Synth.new(\diabetes, [\attack,10,\rel,100,\velocity,60.rand+60,\pan,10.rand,\freq,154.1,\buf,29.0.rand])
+x = Synth.new(\diabetes, [\attack,10,\rel,100,\velocity,111,\pan,1.rand,\freq,146,\buf,29.0.rand])
+
+y = Synth.new(\diabetes, [\rel, 100, \freq, 220, \buf, 22])
+y.set(\buf,28) //do same experiment but map to nanokontrol 
 
 //TEST PBIND
 (
