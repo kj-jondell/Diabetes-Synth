@@ -1,6 +1,8 @@
 s.boot;
 s.reboot;
 s.options.device = "Soundflower (64ch)"
+MIDIClient.init;
+MIDIIn.connectAll;
 
 /*
 *
@@ -35,18 +37,20 @@ b = SoundFile.collectIntoBuffers("/Users/kj/Documents/school/supercollider/proje
         }
     ).add;
 )
+
 //WAVETABLE (interpolating)
 //TODO: controlbus for detuning AND buffernr
-//Vosc3 for detuning
+//Vosc3 for detuning (?)
 //map velocity to amplitude and filter differently
+//Line.kr? have some argument controlling end buf num?
 (
     SynthDef.new(
         \diabetes,
         {
             arg freq = 440, velocity = 67, attack = 0.01, rel = 0.1, buf = 1, pan = 0;
-            var sig = VOsc.ar(buf, freq:freq, mul: velocity/150);
+            var sig = VOsc.ar(Lag2.kr(Line.kr(buf,0,rel),0.1), freq:freq, mul: Lag2.kr(velocity)/150);
             var env = EnvGen.kr(Env.perc(attackTime: attack, releaseTime:rel), doneAction: Done.freeSelf);
-            var filter = LPF.ar((env*sig), freq*velocity.linlin(0,127,0.75,12));
+            var filter = LPF.ar((env*sig), freq*Lag2.kr(velocity.linlin(0,127,0.75,12)));
             Out.ar(pan,filter);
         }
     ).add;
@@ -54,30 +58,46 @@ b = SoundFile.collectIntoBuffers("/Users/kj/Documents/school/supercollider/proje
 
 //DIABETES DRONE
 x = Synth.new(\diabetes, [\attack,10,\rel,100,\velocity,60.rand+60,\pan,10.rand,\freq,154.1,\buf,29.0.rand])
-x = Synth.new(\diabetes, [\attack,10,\rel,100,\velocity,111,\pan,1.rand,\freq,146,\buf,29.0.rand])
 
-y = Synth.new(\diabetes, [\rel, 100, \freq, 220, \buf, 22])
-y.set(\buf,28) //do same experiment but map to nanokontrol 
+s.queryAllNodes();
+s.addr
+s.meter;
 
-//TEST PBIND
-(
-    Pbindef.new(
-        \player,
-        \instrument, \diabetesgrain,
-        \degree, Prand([1,2,3,4,5,6], repeats:inf),
-        \octave, 4,
-        \root, -2,
-        \bufL, Prand([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14], inf), 
-        \bufR, Prand([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14], inf), 
-        \outL, Prand([0,1,2,3,4,5,6], inf),
-        \scale, Scale.whole,
-        \rel, Pwhite(5,10,inf),
-        \dur, Pxrand([1/2,1/3,1/8]/1, repeats:inf)
-    ).play(quant:4);
-)
-
+x.free;
+y.free;
+x = Synth.new(\diabetes, [\attack,0.1,\rel,5, \velocity,55,\pan,0,\freq, 100,\buf,20]);
+y = Synth.new(\diabetes, [\attack, 10, \rel, 350, \freq, 80, \buf, 11+15.rand, \pan, 1])
+y.set(\buf,10) //do same experiment but map to nanokontrol 
+y.set(\velocity,50)
+x.set(\velocity,80)
 
 s.record;
 s.stopRecording;
 s.scope;
+(
+MIDIFunc.cc({|val,num|
+        y.set(\buf,val.linlin(0,127,20,28)); //do same experiment but map to nanokontrol 
+}, ccNum: 17);
+MIDIFunc.cc({|val,num|
+        x.set(\buf,val.linlin(0,127,15,25)); //do same experiment but map to nanokontrol 
+}, ccNum: 16)
+)
 
+~buf = 0;
+~notes = Array.newClear(128);
+(
+~cc = MIDIFunc.cc({|val,num|
+    val.postln;
+    ~buf=val.linlin(0,127,0,30);
+})
+)
+~cc.free
+
+(
+~on = MIDIFunc.noteOn({|val,num|
+    num.postln;
+   ~notes[num] = Synth(\diabetes, [\pan, 5.rand, \freq, ((128-num)%64).midicps, \attack, 10, \rel, 100, \buf, ~buf]); 
+})
+)
+MIDIdef.freeAll;
+~on.free;
