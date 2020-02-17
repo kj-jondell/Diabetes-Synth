@@ -43,12 +43,13 @@ b = SoundFile.collectIntoBuffers("/Users/kj/Documents/school/supercollider/proje
 //Vosc3 for detuning (?)
 //map velocity to amplitude and filter differently
 //Line.kr? have some argument controlling end buf num?
+//how should buf num be controlled? with a ControlBus?
 (
     SynthDef.new(
         \diabetes,
         {
             arg freq = 440, velocity = 67, attack = 0.01, rel = 0.1, buf = 1, pan = 0;
-            var sig = VOsc.ar(Lag2.kr(Line.kr(buf,0,rel),0.1), freq:freq, mul: Lag2.kr(velocity)/150);
+            var sig = VOsc.ar(SinOsc.kr(buf/rel, mul: b.size/2-1, add:b.size/2-1), freq:freq, mul: Lag2.kr(velocity)/150);
             var env = EnvGen.kr(Env.perc(attackTime: attack, releaseTime:rel), doneAction: Done.freeSelf);
             var filter = LPF.ar((env*sig), freq*Lag2.kr(velocity.linlin(0,127,0.75,12)));
             Out.ar(pan,filter);
@@ -63,10 +64,11 @@ s.queryAllNodes();
 s.addr
 s.meter;
 
+s.freeAll
 x.free;
 y.free;
-x = Synth.new(\diabetes, [\attack,0.1,\rel,5, \velocity,55,\pan,0,\freq, 100,\buf,20]);
-y = Synth.new(\diabetes, [\attack, 10, \rel, 350, \freq, 80, \buf, 11+15.rand, \pan, 1])
+x = Synth.new(\diabetes, [\attack,10,\rel,350, \velocity,10,\pan,0,\freq, 80,\buf,2]);
+y = Synth.new(\diabetes, [\attack, 10, \rel, 350, \velocity,10,\freq, 80, \buf, 4.5, \pan, 1])
 y.set(\buf,10) //do same experiment but map to nanokontrol 
 y.set(\velocity,50)
 x.set(\velocity,80)
@@ -76,10 +78,12 @@ s.stopRecording;
 s.scope;
 (
 MIDIFunc.cc({|val,num|
-        y.set(\buf,val.linlin(0,127,20,28)); //do same experiment but map to nanokontrol 
+    y.set(\velocity,val.linlin(0,127,10,127)); //do same experiment but map to nanokontrol 
+    y.set(\freq,val.linexp(0,127,80,110)); //do same experiment but map to nanokontrol 
 }, ccNum: 17);
 MIDIFunc.cc({|val,num|
-        x.set(\buf,val.linlin(0,127,15,25)); //do same experiment but map to nanokontrol 
+    x.set(\velocity,val.linlin(0,127,10,127)); //do same experiment but map to nanokontrol 
+    x.set(\freq,val.linexp(0,127,80,110)); //do same experiment but map to nanokontrol 
 }, ccNum: 16)
 )
 
