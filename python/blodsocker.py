@@ -19,6 +19,7 @@ IS_WAVETABLE = False #Supercollider wavetable format
 WRITE_FILE = False
 AMT_OUTPUT = 30
 
+#function taken from https://stackoverflow.com/questions/54032515/spectral-centroid-of-numpy-array
 def spectral_centroid(x, samplerate=44100):
     magnitudes = np.abs(np.fft.rfft(x))
     length = len(x)
