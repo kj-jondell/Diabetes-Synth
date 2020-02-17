@@ -1,7 +1,9 @@
 ### Interpreter of blood glucose data from Abbot FreeStyle Libre. Spline interpolation and ouptut of 1024 sample wav-file.
 ### TODO: 1. Cleanup code
 ### 2. automation (DONE)
+###     b) automate extraction of glucose levels from excel-spreadsheet (or even API from freestyle libre app..)
 ### 3. improve date interpolation (include year for example)
+### 4. sort by centroid frequency
 
 from dateutil import parser
 import numpy as np
@@ -13,12 +15,21 @@ import soundfile as sf
 
 SAMPLE_RATE = 48000
 BUFFER_SIZE = 2048
-IS_WAVETABLE = True #Supercollider wavetable format
+IS_WAVETABLE = False #Supercollider wavetable format
+WRITE_FILE = False
 AMT_OUTPUT = 30
+
+def spectral_centroid(x, samplerate=44100):
+    magnitudes = np.abs(np.fft.rfft(x))
+    length = len(x)
+    freqs = np.abs(np.fft.fftfreq(length, 1.0/samplerate)[:length//2+1])
+    magnitudes = magnitudes[:length//2+1]
+    return np.sum(magnitudes*freqs) / np.sum(magnitudes)
 
 days_per_month = [31,28,31,30,31,30,31,31,30,31,30,31]
 times = []
 values = []
+window = signal.tukey(BUFFER_SIZE, 0.1) #window function, to smoothen buffer
 with open('python/blodsocker.txt', 'r', encoding='utf-8-sig') as reader:
     ### read and interpret data.
     lines = reader.readlines()
@@ -43,7 +54,7 @@ with open('python/blodsocker.txt', 'r', encoding='utf-8-sig') as reader:
             sample.append(spl(x))
         sample = [(x-min(sample)) for x in sample]
         sample = [ 2*(x/max(sample)-0.5) for x in sample] #normalize and center sound
-        window = signal.tukey(BUFFER_SIZE, 0.1) #window function, to smoothen buffer
+
         for ind, w_sample in enumerate(window):
             sample[ind] = sample[ind]*w_sample
         if IS_WAVETABLE:
@@ -52,6 +63,9 @@ with open('python/blodsocker.txt', 'r', encoding='utf-8-sig') as reader:
                     sample[ind] = 2*sample[ind] - sample[ind+1]
                 else:
                     sample[ind] = sample[ind] - sample[ind-1]
-        sf.write('samples/wavetable2048/blodsocker{}.wav'.format(sampleIndex+1), sample, SAMPLE_RATE)
+
+        print(spectral_centroid(sample, SAMPLE_RATE)) #prints spectral centroids (TODO: print as list)
+        if WRITE_FILE:
+            sf.write('samples/wavetable2048/blodsocker{}.wav'.format(sampleIndex+1), sample, SAMPLE_RATE)
 
 
