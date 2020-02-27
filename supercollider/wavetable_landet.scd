@@ -31,40 +31,49 @@
             buffers.add(Buffer.read(s, path: url, numFrames: 2048, bufnum: count));
         });
 
-        ~oscProcessing = NetAddr.new("169.254.208.191", 7771);
+        ~oscProcessing = NetAddr.new("192.168.2.2", 7771);
         //WAVETABLE (interpolating)
         //TODO: controlbus for detuning AND buffernr
         //Vosc3 for detuning (?)
         //map velocity to amplitude and filter differently
         //Line.kr? have some argument controlling end buf num?
         //how should buf num be controlled? with a ControlBus?
+        //Rel?? attack??
         SynthDef.new(
             \diabetes,
             {
-                arg freq = 440, velocity = 67, attack = 0.01, rel = 0.1, buf = 1, pan = 0;
-                var sig = VOsc.ar(buf, freq:freq, mul: Lag2.kr(velocity)/150);
+                arg freq = 440, velocity = 67, detuneFactor = 1.0, buf = 1, pan = 0;
+                var sig = VOsc3.ar(buf, freq1:freq, freq2:freq*(1.0-(detuneFactor*0.5)), freq3:freq*(1.0+(detuneFactor*0.5)), mul: Lag2.kr(velocity)/325+0.15);
                 var filter = LPF.ar(sig, freq*Lag2.kr(velocity.linlin(0,127,0.75,12)));
                 Out.ar(pan,filter);
         }).add;
 
-        s.sync;
+        s.sync; //wait for Synthdef and buffers...
 
-        leftSynth = Synth.new(\diabetes, [\attack,10,\rel,15, \velocity,80,\pan,0,\freq, 80,\buf,2]);//TODO: change parameters
-        rightSynth = Synth.new(\diabetes, [\attack, 10, \rel, 15, \velocity,80,\freq, 82, \buf, 4.5, \pan, 1]);//TODO: change parameters
+        leftSynth = Synth.new(\diabetes, [\velocity, 10, \pan, 0, \freq, 70,\buf, 5, \detuneFactor, 1.0]);
+        rightSynth = Synth.new(\diabetes, [\velocity, 10, \freq, 80, \buf, 0, \pan, 1, \detuneFactor, 0.9]);
 
         MIDIFunc.cc({|val,num|
-            ~oscProcessing.sendMsg("/test", val.linlin(0,127,0,6));
+            ~oscProcessing.sendMsg("/terrainHeight", val);
+            ~oscProcessing.sendMsg("/flySpeed", val.linlin(0,127,0,1));
             leftSynth.set(\freq,val.linexp(0,127,70,110)); 
             leftSynth.set(\buf,val.linlin(0,127,5,28)); 
-            leftSynth.set(\velocity,val.linlin(0,127,10,120)); 
+            leftSynth.set(\velocity,val.linexp(0,127,10,120)); 
+            leftSynth.set(\detuneFactor, val.linlin(0,127,1.0,0));
 
-            rightSynth.set(\velocity,val.linlin(0,127,10,120)); 
+            rightSynth.set(\detuneFactor, val.linlin(0,127,0.9,0));
+            rightSynth.set(\velocity,val.linexp(0,127,10,120)); 
             rightSynth.set(\freq,val.linexp(0,127,80,110)); 
             rightSynth.set(\buf,val.linlin(0,127,0,28)); 
         }, ccNum: 16);
+
+        //Trigger decay and than free?
+        MIDIFunc.noteOn({arg val, num;
+           leftSynth.free;
+           rightSynth.free;
+        }, noteNum: 32, chan: 1);
     });
 )
-~oscProcessing.sendMsg("/test","hello");
 /// SERVER FUNCTIONS
 s.queryAllNodes();
 s.addr
