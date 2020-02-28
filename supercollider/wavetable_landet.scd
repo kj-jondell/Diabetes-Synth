@@ -71,6 +71,7 @@
         MIDIFunc.noteOn({arg val, num;
            leftSynth.free;
            rightSynth.free;
+           //TRIGGER OSC SHIFT OF SCENE
         }, noteNum: 32, chan: 1);
     });
 )
