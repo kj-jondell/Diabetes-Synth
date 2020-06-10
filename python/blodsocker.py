@@ -12,6 +12,7 @@ from scipy.interpolate import BSpline
 from scipy import signal
 import scipy
 import soundfile as sf
+import xlrd
 
 SAMPLE_RATE = 48000
 BUFFER_SIZE = 2048
