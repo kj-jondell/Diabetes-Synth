@@ -43,7 +43,7 @@
             \diabetes,
             {
                 arg freq = 440, velocity = 67, detuneFactor = 1.0, buf = 1, pan = 0;
-                var sig = VOsc3.ar(buf, freq1:freq, freq2:freq*(1.0-(detuneFactor*0.5)), freq3:freq*(1.0+(detuneFactor*0.5)), mul: Lag2.kr(velocity)/325+0.15);
+                var sig = VOsc3.ar(buf, freq1:freq, freq2:freq*(1.0-(detuneFactor*0.5)), freq3:freq*(1.0+(detuneFactor*0.5)), mul: Lag2.kr(velocity.linexp(0,127,-40,-6).dbamp));
                 var filter = LPF.ar(sig, freq*Lag2.kr(velocity.linlin(0,127,0.75,12)));
                 Out.ar(pan,filter);
         }).add;
@@ -52,10 +52,12 @@
 
         leftSynth = Synth.new(\diabetes, [\velocity, 10, \pan, 0, \freq, 70,\buf, 5, \detuneFactor, 1.0]);
         rightSynth = Synth.new(\diabetes, [\velocity, 10, \freq, 80, \buf, 0, \pan, 1, \detuneFactor, 0.9]);
+        leftSynth.set(\velocity,60);
+        rightSynth.set(\velocity,40);
 
         MIDIFunc.cc({|val,num|
-            ~oscProcessing.sendMsg("/terrainHeight", val);
-            ~oscProcessing.sendMsg("/flySpeed", val.linlin(0,127,0,1));
+            //~oscProcessing.sendMsg("/terrainHeight", val);
+            //~oscProcessing.sendMsg("/flySpeed", val.linlin(0,127,0,1));
             leftSynth.set(\freq,val.linexp(0,127,70,110)); 
             leftSynth.set(\buf,val.linlin(0,127,5,28)); 
             leftSynth.set(\velocity,val.linexp(0,127,10,120)); 

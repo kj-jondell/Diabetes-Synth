@@ -31,6 +31,7 @@ days_per_month = [31,28,31,30,31,30,31,31,30,31,30,31]
 times = []
 values = []
 window = signal.tukey(BUFFER_SIZE, 0.1) #window function, to smoothen buffer
+centroids = list()
 with open('python/blodsocker.txt', 'r', encoding='utf-8-sig') as reader:
     ### read and interpret data.
     lines = reader.readlines()
@@ -54,7 +55,7 @@ with open('python/blodsocker.txt', 'r', encoding='utf-8-sig') as reader:
         for x in range(BUFFER_SIZE*sampleIndex,BUFFER_SIZE*(sampleIndex+1)):
             sample.append(spl(x))
         sample = [(x-min(sample)) for x in sample]
-        sample = [ 2*(x/max(sample)-0.5) for x in sample] #normalize and center sound
+        sample = [ 2*(x/(max(sample)-min(sample))-0.5) for x in sample] #normalize and center sound
 
         for ind, w_sample in enumerate(window):
             sample[ind] = sample[ind]*w_sample
@@ -65,8 +66,8 @@ with open('python/blodsocker.txt', 'r', encoding='utf-8-sig') as reader:
                 else:
                     sample[ind] = sample[ind] - sample[ind-1]
 
-        print(spectral_centroid(sample, SAMPLE_RATE)) #prints spectral centroids (TODO: print as list)
+        centroids.append(spectral_centroid(sample, SAMPLE_RATE)) #prints spectral centroids (TODO: print as list)
         if WRITE_FILE:
             sf.write('samples/wavetable2048/blodsocker{}.wav'.format(sampleIndex+1), sample, SAMPLE_RATE)
 
-
+print(centroids)

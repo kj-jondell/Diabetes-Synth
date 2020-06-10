@@ -77,13 +77,15 @@ x = Synth.new(\diabetes, [\attack,10,\rel,100,\velocity,60.rand+60,\pan,10.rand,
 s.queryAllNodes();
 s.addr
 s.meter;
+s.scope;
 
 s.freeAll
 x.free;
 y.free;
 x = Synth.new(\diabetes, [\attack,10,\rel,750, \velocity,80,\pan,0,\freq, 80,\buf,2]);
-y = Synth.new(\diabetes, [\attack, 10, \rel, 750, \velocity,10,\freq, 80, \buf, 4.5, \pan, 1])
-y.set(\buf,10) //do same experiment but map to nanokontrol 
+y = Synth.new(\diabetes, [\attack, 10, \rel, 750, \velocity,80,\freq, 82, \buf, 4.5, \pan, 1])
+y.set(\buf,25.5) //do same experiment but map to nanokontrol 
+x.set(\buf,26) //do same experiment but map to nanokontrol 
 y.set(\velocity,50)
 x.set(\velocity,80)
 
@@ -91,8 +93,8 @@ s.record;
 s.stopRecording;
 s.scope;
 
-p = NetAddr.new("127.0.0.1", 7771);
-
+p = NetAddr.new("192.168.2.2", 7771);
+p.sendMsg("/test", "25");
 (
 MIDIFunc.cc({|val,num|
     y.set(\velocity,val.linlin(0,127,10,120)); //do same experiment but map to nanokontrol 
