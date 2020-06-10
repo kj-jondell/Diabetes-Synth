@@ -1,5 +1,6 @@
 ~isLoaded = False;
 (
+
     s.options.device = "Soundflower (64ch)";
     s.options.memSize = 8192*4;
     MIDIClient.init;
