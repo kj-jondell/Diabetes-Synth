@@ -1,3 +1,11 @@
+/**
+* TODO: - Write better comments
+*       - Fix GUI
+*       - Markdown readme
+*       - 
+* © Karl Johannes Jondell
+*/
+
 ~isLoaded = False;
 (
     s.options.device = "Soundflower (64ch)";
