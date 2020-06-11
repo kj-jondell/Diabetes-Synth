@@ -7,7 +7,6 @@ The Python code converts data taken from the Abbott FreeStyle Libre and converts
 ### Dependencies
 * SciPy
 * NumPy
-* PyPlot
 * SoundFile
 * xlrd
 

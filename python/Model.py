@@ -2,16 +2,17 @@
 ### TODO: 1. Cleanup code
 ### 2. automation (DONE)
 ###     b) automate extraction of glucose levels from excel-spreadsheet (or even API from freestyle libre app..)
+### 3. GUI! (MVC)
 
 from dateutil import parser
-import numpy as np
-import matplotlib.pyplot as plt
+import numpy 
 from scipy.interpolate import BSpline
 from scipy import signal
 import scipy
 import soundfile as sf
 import xlrd
 
+### MODEL
 # SETTINGS
 SAMPLE_RATE = 48000
 BUFFER_SIZE = 2048
@@ -24,13 +25,15 @@ AMT_OUTPUT = 30
 ROW_OFFSET = 5
 SHEET_NO = 1
 
+class Model:
+    pass
 #function taken from https://stackoverflow.com/questions/54032515/spectral-centroid-of-numpy-array
 def spectral_centroid(x, samplerate=44100):
-    magnitudes = np.abs(np.fft.rfft(x))
+    magnitudes = numpy.abs(numpy.fft.rfft(x))
     length = len(x)
-    freqs = np.abs(np.fft.fftfreq(length, 1.0/samplerate)[:length//2+1])
+    freqs = numpy.abs(numpy.fft.fftfreq(length, 1.0/samplerate)[:length//2+1])
     magnitudes = magnitudes[:length//2+1]
-    return np.sum(magnitudes*freqs) / np.sum(magnitudes)
+    return numpy.sum(magnitudes*freqs) / numpy.sum(magnitudes)
 
 times = []
 values = []
