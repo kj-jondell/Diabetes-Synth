@@ -9,7 +9,7 @@ class View(QWidget):
 
         self.button = QPushButton("Choose file")
         self.label = QLabel("Chosen file: ")
-        self.button.setMaximumSize(100, 30)
+        self.button.setMaximumSize(100, 30) #define some other way
 
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.label)
