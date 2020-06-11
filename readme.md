@@ -9,6 +9,7 @@ The Python code converts data taken from the Abbott FreeStyle Libre and converts
 * NumPy
 * SoundFile
 * xlrd
+* PySide2 (Qt for Python)
 
 ### Notes
 Diasend only allows exporting data from the last 202 days.
