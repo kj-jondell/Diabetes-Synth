@@ -4,15 +4,17 @@ from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
 
-UI_FILE_NAME = "ui/view.ui"
+UI_FILE_NAME = "ui/view.ui" # Qt Designer ui file
 
 class View(QApplication):
 
     def __init__(self):
         QApplication.__init__(self)
+        self.load_view()
+        self.window.file_chooser.clicked.connect(self.choose_file)
 
+    def load_view(self):
         self.ui_file = QFile(UI_FILE_NAME)
-
         if not self.ui_file.open(QIODevice.ReadOnly):
             print("Cannot open {}: {}".format(UI_FILE_NAME, self.ui_file.errorString()))
             sys.exit(-1)
@@ -25,26 +27,23 @@ class View(QApplication):
             print(self.loader.errorString())
             sys.exit(-1)
 
-        self.window.show()
+    def choose_file(self):
+        self.chosen_filename = QFileDialog.getOpenFileName(self.window, 'Open file', filter = "XLS files (*.xls)")
+        if self.chosen_filename[0] != "":
+            self.window.filename.setText(self.chosen_filename[0])
+            self.change_enabled_settings()
 
+    # TODO group objects that are settings control instead of hardcoded hack !!!
+    def change_enabled_settings(self, enable = True):
+        for child in self.window.centralwidget.children():
+            if type(child) != QLabel and child.objectName() != "file_chooser":
+                try: 
+                    child.setEnabled(enable)
+                except:
+                    pass
+        
+    def run_view(self):
+        self.window.show()
         sys.exit(self.exec_())
 
-View()
-
-    # def __init__(self):
-    #     QWidget.__init__(self)
-
-    #     self.button = QPushButton("Choose file")
-    #     self.label = QLabel("Chosen file: ")
-    #     self.button.setMaximumSize(100, 30) #define some other way
-
-    #     self.layout = QVBoxLayout()
-    #     self.layout.addWidget(self.label)
-    #     self.layout.addWidget(self.button)
-    #     self.setLayout(self.layout)
-
-    #     self.button.clicked.connect(self.chooseFile)
-
-    # def chooseFile(self):
-    #     self.filename = QFileDialog.getOpenFileName(self, 'Open file')
-    #     self.label.setText("Chosen file: {}".format(self.filename[0]))
+View().run_view()

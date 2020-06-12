@@ -16,7 +16,7 @@
                 {
                     order.mirror.do({
                         arg index, count;
-                        var url = File.getcwd++format("/samples/wavetable2048/blodsocker%.wav", index+1); //put samples somewhere else...
+                        var url = File.getcwd++format("/samples/blodsocker%.wav", index+1); //put samples somewhere else...
                         buffers.add(Buffer.read(s, path: url, numFrames: 2048));
                     });
                     ~isLoaded = True;
