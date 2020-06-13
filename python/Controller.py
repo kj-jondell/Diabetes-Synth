@@ -4,7 +4,7 @@ from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
 
-UI_FILE_NAME = "ui/view.ui" # Qt Designer ui file
+UI_FILE_NAME = "ui/controller.ui" # Qt Designer ui file
 
 class View(QApplication):
 
