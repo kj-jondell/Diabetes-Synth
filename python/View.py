@@ -1,16 +1,18 @@
 import sys 
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
-                               QVBoxLayout, QWidget, QFileDialog)
+                               QVBoxLayout, QWidget, QFileDialog,
+                               QProgressDialog)
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
 from Model import Model
 
-UI_FILE_NAME = "python/ui/controller.ui" # Qt Designer ui file
+UI_FILE_NAME = "ui/controller.ui" # Qt Designer ui file TODO fix path!
 
-class Controller(QApplication):
+class View(QApplication):
 
     def __init__(self):
         QApplication.__init__(self)
+
         self.load_view()
         self.window.file_chooser.clicked.connect(self.choose_file)
         self.window.run_button.clicked.connect(self.convert_files)
@@ -38,9 +40,19 @@ class Controller(QApplication):
         window_type = self.window.window_type.currentText() 
         amt_output = self.window.amt_files.value() 
 
-        Model(self.chosen_filename, sample_rate, buffer_size,
+        self.progress = QProgressDialog("Creating files", "Cancel", 0, 100, self.window)
+        self.progress.show()
+        self.update_progressbar()
+
+        Model(self.chosen_filename, self, sample_rate, buffer_size,
                 window_size, is_wavetable, write_file,
                 window_type, amt_output)
+
+    def update_progressbar(self, value = 0, label = "Creating files"):
+        self.progress.setValue(value)
+        self.progress.setLabelText(label)
+        self.processEvents()
+        return self.progress.wasCanceled() #TODO change to threading with QRunnable...
 
     def choose_file(self):
         self.chosen_filename, filter_type = QFileDialog.getOpenFileName(self.window, 'Open file', filter = "XLS files (*.xls)")
@@ -61,5 +73,3 @@ class Controller(QApplication):
     def run_view(self):
         self.window.show()
         sys.exit(self.exec_())
-
-Controller().run_view()
