@@ -13,6 +13,22 @@ The Python code converts data taken from the Abbott FreeStyle Libre and converts
 * xlrd
 * PySide2 (Qt for Python)
 
+### Running
+1. First make sure all dependencies are installed (using pip):
+```
+pip3 install scipy numpy soundfile xlrd pyside2
+```
+2. Then execute the following command to install and run the program. 
+```
+git clone https://github.com/kj-jondell/Diabetes-Synth.git ; cd Diabetes-Synth/python/ ; python3 .
+```
+3. To run the program after installation, simply cd into the python-directory and execute:
+```
+python3 .
+```
+
+### Release
+
 ### Notes
 Diasend only allows exporting data from the last 202 days.
 
