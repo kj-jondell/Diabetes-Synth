@@ -1,4 +1,4 @@
-# WHAT IS THIS?
+# Glucose Level Wavetable Synthesizer
 A wavetable-synthesizer using blood glucose levels as periodic waveforms. Controllable using MIDI.
 
 ## Python
