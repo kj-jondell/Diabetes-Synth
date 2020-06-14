@@ -3,6 +3,7 @@
 ### 2. Threading (with QRunnable)!!! Better handling of GUI thread and Model. (Semaphore?) Signals/Slots...
 ### 3. View inheriting from QWindow instead of QApplication
 ### 4. Standalone executable (PyInstaller)
+### 5. Implement centroids!
 
 from View import View  
 
