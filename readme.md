@@ -26,8 +26,7 @@ git clone https://github.com/kj-jondell/Diabetes-Synth.git ; cd Diabetes-Synth/p
 ```
 python3 .
 ```
-
-### Release
+<!-- ### Release page -->
 
 ### Notes
 Diasend only allows exporting data from the last 202 days.
