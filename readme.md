@@ -2,6 +2,10 @@
 A wavetable-synthesizer using blood glucose levels as periodic waveforms. Controllable using MIDI.
 
 ## Python
+### Usable data
+The program expects the usage of datasheets taken from [Diasend](https://www.diasend.com/) and has only been tested with the Abbott FreeStyle Libre (but should be usable with other CGMs and FGMs supported by Diasend, such as Dexcom G6). The file used by the program can be downloaded from the page "Share Data" and "Export Data" in Diasend. The automatically downloaded (.xls) file can be opened straight from the program.
+
+### GUI program
 The Python code converts data taken from the Abbott FreeStyle Libre and converts into 2048-sample long periodic waveforms (in the form of wav-files). The data uses BSpline interpolation and Tukey-windowing. It also outputs the order of spectral centroids of the waveforms from low to high.
 
 ![image](https://user-images.githubusercontent.com/30523857/84592134-968baf00-ae43-11ea-9e0a-e377a076c4a4.png)
@@ -10,13 +14,14 @@ The Python code converts data taken from the Abbott FreeStyle Libre and converts
 * SciPy
 * NumPy
 * SoundFile
+* dateutil
 * xlrd
 * PySide2 (Qt for Python)
 
 ### Running
 1. First make sure all dependencies are installed (using pip):
 ```
-pip3 install scipy numpy soundfile xlrd pyside2
+pip3 install scipy numpy soundfile xlrd pyside2 python-dateutil
 ```
 2. Then execute the following command to install and run the program. 
 ```
