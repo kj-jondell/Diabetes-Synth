@@ -39,6 +39,12 @@ class View(QApplication):
         write_file = self.window.write_files.isChecked() 
         window_type = self.window.window_type.currentText() 
         amt_output = self.window.amt_files.value() 
+        output_filename = ""
+
+        if write_file:
+            chosen_filename, filter_type = QFileDialog.getSaveFileName(self.window, 'Save file', filter = "WAV files (*.wav)")
+            aggregate_names = chosen_filename.rsplit(".")
+            output_filename = "{}_{}.{}".format(aggregate_names[0], '{}', aggregate_names[1])
 
         self.progress = QProgressDialog("Creating files", "Cancel", 0, 100, self.window)
         self.progress.show()
@@ -46,7 +52,7 @@ class View(QApplication):
 
         Model(self.chosen_filename, self, sample_rate, buffer_size,
                 window_size, is_wavetable, write_file,
-                window_type, amt_output)
+                window_type, amt_output, output_filename)
 
     def update_progressbar(self, value = 0, label = "Creating files"):
         self.progress.setValue(value)

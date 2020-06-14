@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>256</width>
-    <height>400</height>
+    <width>485</width>
+    <height>256</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,14 +18,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>256</width>
-    <height>342</height>
+    <width>485</width>
+    <height>256</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>256</width>
-    <height>400</height>
+    <width>485</width>
+    <height>256</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -68,8 +68,8 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>330</y>
-      <width>71</width>
+      <y>180</y>
+      <width>91</width>
       <height>32</height>
      </rect>
     </property>
@@ -83,9 +83,9 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>330</y>
-      <width>81</width>
+      <x>350</x>
+      <y>180</y>
+      <width>91</width>
       <height>32</height>
      </rect>
     </property>
@@ -99,8 +99,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>130</y>
+      <x>360</x>
+      <y>40</y>
       <width>101</width>
       <height>32</height>
      </rect>
@@ -138,8 +138,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>140</y>
+      <x>250</x>
+      <y>50</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -152,7 +152,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>180</y>
+      <y>100</y>
       <width>91</width>
       <height>16</height>
      </rect>
@@ -164,8 +164,8 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>240</y>
+      <x>250</x>
+      <y>80</y>
       <width>81</width>
       <height>21</height>
      </rect>
@@ -177,8 +177,8 @@
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>270</y>
+      <x>250</x>
+      <y>110</y>
       <width>59</width>
       <height>16</height>
      </rect>
@@ -190,8 +190,8 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>300</y>
+      <x>250</x>
+      <y>140</y>
       <width>101</width>
       <height>16</height>
      </rect>
@@ -207,7 +207,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>170</y>
+      <y>100</y>
       <width>62</width>
       <height>22</height>
      </rect>
@@ -234,8 +234,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>240</y>
+      <x>390</x>
+      <y>80</y>
       <width>86</width>
       <height>20</height>
      </rect>
@@ -253,8 +253,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>270</y>
+      <x>390</x>
+      <y>110</y>
       <width>86</width>
       <height>20</height>
      </rect>
@@ -272,8 +272,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>300</y>
+      <x>390</x>
+      <y>140</y>
       <width>42</width>
       <height>22</height>
      </rect>
@@ -313,7 +313,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>210</y>
+      <y>140</y>
       <width>101</width>
       <height>16</height>
      </rect>
@@ -329,7 +329,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>200</y>
+      <y>130</y>
       <width>101</width>
       <height>32</height>
      </rect>
@@ -372,8 +372,8 @@
    <widget class="QLabel" name="label_8">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>110</y>
+      <x>250</x>
+      <y>20</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -388,8 +388,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>100</y>
+      <x>360</x>
+      <y>10</y>
       <width>101</width>
       <height>32</height>
      </rect>
@@ -424,13 +424,29 @@
      </property>
     </item>
    </widget>
+   <widget class="QPushButton" name="centroids_button">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>180</y>
+      <width>91</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Centroids</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>256</width>
+     <width>485</width>
      <height>22</height>
     </rect>
    </property>

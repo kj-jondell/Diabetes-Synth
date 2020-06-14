@@ -17,6 +17,7 @@ IS_WAVETABLE = False #Supercollider wavetable format
 WRITE_FILE = True
 WINDOW_TYPE = "Hann"
 AMT_OUTPUT = 3
+OUTPUT_FILENAME = ""
 
 # CALIBRATION
 ROW_OFFSET = 5
@@ -34,6 +35,7 @@ class Model:
     write_file: bool = WRITE_FILE
     window_type: str = WINDOW_TYPE
     amt_output: int = AMT_OUTPUT
+    output_filename: str = OUTPUT_FILENAME 
 
     def __post_init__(self):
         self.window = WINDOWS[self.window_type](self.buffer_size, self.window_size if self.window_type == "Tukey" else None) #window function, to smoothen buffer TODO make selectable
@@ -122,4 +124,4 @@ class Model:
 
             self.centroids.append(self.spectral_centroid(sample, self.sample_rate)) #prints spectral centroids (TODO: print as list)
             if self.write_file:
-                sf.write('blodsocker{}.wav'.format(sample_index+1), sample, self.sample_rate) #ask for name
+                sf.write(self.output_filename.format(sample_index+1), sample, self.sample_rate) #ask for name
