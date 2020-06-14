@@ -6,7 +6,7 @@ from scipy import signal
 import scipy
 import soundfile as sf
 import xlrd
-import View
+import View #TODO new system with signals and slots
 
 ### MODEL
 # SETTINGS
@@ -17,13 +17,14 @@ IS_WAVETABLE = False #Supercollider wavetable format
 WRITE_FILE = True
 WINDOW_TYPE = "Hann"
 AMT_OUTPUT = 3
-OUTPUT_FILENAME = ""
+OUTPUT_FILENAME = "blodsocker_{}.wav"
 
 # CALIBRATION
 ROW_OFFSET = 5
 SHEET_NO = 1
 WINDOWS = {"Tukey" : signal.tukey, "Hamming" : signal.hamming, "Hann" : signal.hann, "Boxcar" : signal.boxcar, "Blackman" : signal.blackman} # TODO fix parameters for each type of window
 
+#TODO make into QRunnable instead (and not dataclass...)
 @dataclass
 class Model:
     filename: str
@@ -111,7 +112,7 @@ class Model:
 
             for ind, w_sample in enumerate(self.window):
                 sample[ind] = sample[ind]*w_sample
-            if self.is_wavetable:
+            if self.is_wavetable: #SuperCollider wavetable format
                 for ind, c_sample in enumerate(sample):
                     if ind % 2 == 0:
                         sample[ind] = 2*sample[ind] - sample[ind+1]
@@ -124,4 +125,4 @@ class Model:
 
             self.centroids.append(self.spectral_centroid(sample, self.sample_rate)) #prints spectral centroids (TODO: print as list)
             if self.write_file:
-                sf.write(self.output_filename.format(sample_index+1), sample, self.sample_rate) #ask for name
+                sf.write(self.output_filename.format(sample_index+1), sample, self.sample_rate) 
