@@ -15,6 +15,7 @@ class View(QMainWindow):
         self.load_view()
         self.central_widget.file_chooser.clicked.connect(self.choose_file)
 
+        self.setWindowTitle("Glucose Level Converter")
         self.setCentralWidget(self.central_widget)
         self.show()
 

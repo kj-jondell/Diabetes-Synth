@@ -108,7 +108,7 @@ class Model(QThread):
         progress_division = (100-self.progress)/(self.amt_output*3) 
         for sample_index in range(0, self.amt_output):
             self.progress += progress_division 
-            self.update_progressbar((self.progress, "Normalizing and centering data"))
+            self.update_progressbar((self.progress, "Processing file {} out of {}".format(sample_index+1, self.amt_output)))
 
             sample = []
             for x in range(self.buffer_size*sample_index, self.buffer_size*(sample_index+1)):
@@ -117,7 +117,7 @@ class Model(QThread):
             sample = [ 2*(x/(max(sample)-min(sample))-0.5) for x in sample] #normalize and center sound
 
             self.progress += progress_division 
-            self.update_progressbar((self.progress, "Apply window{}".format(" and wavetable" if self.is_wavetable else "")))
+            self.update_progressbar((self.progress, None))
 
             for ind, w_sample in enumerate(self.window):
                 sample[ind] = sample[ind]*w_sample
@@ -129,7 +129,7 @@ class Model(QThread):
                         sample[ind] = sample[ind] - sample[ind-1]
 
             self.progress += progress_division 
-            self.update_progressbar((self.progress, "Calculate centroid{}".format(" and write files" if self.write_file else "")))
+            self.update_progressbar((self.progress, None))
 
             self.centroids.append(self.spectral_centroid(sample, self.sample_rate)) #prints spectral centroids (TODO: print as list)
             if self.write_file:
