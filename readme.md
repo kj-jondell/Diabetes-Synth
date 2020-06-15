@@ -37,4 +37,4 @@ python3 .
 Diasend only allows exporting data from the last 202 days.
 
 ## Wavetable Synthesizer
-
+More info coming soon...
