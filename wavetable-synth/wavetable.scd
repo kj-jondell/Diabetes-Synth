@@ -1,32 +1,47 @@
 /**
 * TODO: - Write better comments
 *       - Fix GUI
-*           - Run through Python! With osc commands to control SuperCollider 
+*           - Run through Python! With csv settings and osc commands to control SuperCollider 
 *       - Make variable urls
 * © Karl Johannes Jondell
 */
 
-// ~isLoaded = False;
-Server.default.options.device = "Soundflower (64ch)";
-Server.default.options.memSize = 8192*4;
+// -------------------- PARSE SETTINGS FILE -------------------- //
+var settings = Dictionary.new;
+var settings_file = CSVFileReader.read("settings");
+var device, memsize, order, numframes, filename; //settings variable declaration
+
+settings_file.do({
+    arg value; 
+    settings.put(value[0], value[1])
+});
+
+// TODO remove [1..] (or..? readability of settings file..)
+device = settings["device"][1..];
+memsize = settings["memsize"][1..].asInteger;
+order = settings["order"][1..].split($ ).asInteger;
+numframes = settings["numframes"][1..].asInteger;
+filename = settings["filename"][1..];
+
+// -------------------- PREPARATIONS -------------------- //
+
+Server.default.options.device = device;
+Server.default.options.memSize = memsize;
+
 MIDIClient.init;
-MIDIIn.connectAll;
+MIDIIn.connectAll; //Choose mididevice...
 
 Server.default.waitForBoot(
     {
-        var order = #[17, 2, 19, 4, 9, 22, 13, 20, 23, 12, 24, 8, 18, 5, 0, 16, 7, 3, 10, 6, 1, 27, 14, 21, 26, 28, 11, 29, 25, 15]; //spectral centroid ordered from low to hi TODO VARIABLE
         var buffers = Array.new(order.size);
         var envelop, keys;
-        var detune = 1.5, releaseTime = 2, attackTime = 0.01;
+        var detune = 1.5, releaseTime = 2, attackTime = 0.01; //Default values
 
-        //if(~isLoaded == False,
-            order.mirror.do({
-                arg index, count;
-                var url = File.getcwd++format("/samples/blodsocker%.wav", index+1); //put samples somewhere else... TODO VARIABLE
-                buffers.add(Buffer.read(s, path: url, numFrames: 2048)); //TODO VARIABLE 
-            });
-            //~isLoaded = True;
-        //);
+        order.mirror.do({
+            arg index, count;
+            var url = File.getcwd++format(filename, index+1); //put samples somewhere else... 
+            buffers.add(Buffer.read(s, path: url, numFrames: numframes)); 
+        });
 
         s.freeAll;
 
@@ -100,17 +115,4 @@ Server.default.waitForBoot(
 
         }
     ).add;
-
-}
-    );
-//~isLoaded = False;
-
-/*
-s.boot;
-s.meter
-s.queryAllNodes();
-3.octcps
-{LFTri.kr(1).unipolar(mul:15);}.plot(1);
-rrand(-1.0,1.0);
-File.getcwd[..File.getcwd.size-9]++"/hello".postln
-*/
+});

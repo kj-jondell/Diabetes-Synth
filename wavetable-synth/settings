@@ -1,0 +1,5 @@
+device, Soundflower (64ch)
+memsize, 32768
+numframes, 2048
+filename, /samples/blodsocker%.wav
+order, 17 2 19 4 9 22 13 20 23 12 24 8 18 5 0 16 7 3 10 6 1 27 14 21 26 28 11 29 25 15
