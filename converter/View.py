@@ -1,11 +1,12 @@
-import sys 
+import sys
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
                                QVBoxLayout, QWidget, QFileDialog,
                                QMainWindow)
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
+from pathlib import Path
 
-UI_FILE_NAME = "convert_gui.ui" # Qt Designer ui file TODO fix path!
+UI_FILE_NAME = str(Path(__file__).parent / "ui/convert_gui.ui")
 
 class View(QMainWindow):
 
@@ -32,26 +33,31 @@ class View(QMainWindow):
         if not self.central_widget:
             print(self.loader.errorString())
             sys.exit(-1)
-
+    
+    # Returns user inputs if available
     def get_settings(self):
-        sample_rate = (int)(self.central_widget.sample_rate.currentText()) 
-        buffer_size = (int)(self.central_widget.buffer_size.currentText())
-        window_size = self.central_widget.window_size.value() 
-        is_wavetable = self.central_widget.is_wavetable.isChecked() 
-        write_file = self.central_widget.write_files.isChecked() 
-        window_type = self.central_widget.window_type.currentText() 
-        amt_output = self.central_widget.amt_files.value() 
-        output_filename = ""
+        settings = {}
+        settings['chosen_filename'] = self.chosen_filename 
+        settings['sample_rate'] = (int)(self.central_widget.sample_rate.currentText()) 
+        settings['buffer_size'] = (int)(self.central_widget.buffer_size.currentText())
+        settings['window_size'] = self.central_widget.window_size.value() 
+        settings['is_wavetable'] = self.central_widget.is_wavetable.isChecked() 
+        settings['write_file'] = self.central_widget.write_files.isChecked() 
+        settings['window_type'] = self.central_widget.window_type.currentText() 
+        settings['amt_output'] = self.central_widget.amt_files.value() 
 
-        if write_file:
-            chosen_filename, filter_type = QFileDialog.getSaveFileName(self.central_widget, 'Save file', filter = "WAV files (*.wav)")
-            aggregate_names = chosen_filename.rsplit(".")
-            output_filename = "{}_{}.{}".format(aggregate_names[0], '{}', aggregate_names[1])
+        if settings['write_file']:
+            chosen_path, filter_type = QFileDialog.getSaveFileName(self.central_widget, 'Save project', filter = "DIA project")
+            if chosen_path:
+                chosen_path += "/samples"
+                Path(chosen_path).mkdir(parents = True, exist_ok = True)
+                settings['output_filename'] = "{}/sample_{}".format(chosen_path, '{}.wav')
+                return settings 
+            else:
+                return None
 
-        return (self.chosen_filename, sample_rate, buffer_size,
-                window_size, is_wavetable, write_file,
-                window_type, amt_output, output_filename)
-
+        return settings
+    
     def choose_file(self):
         self.chosen_filename, filter_type = QFileDialog.getOpenFileName(self.central_widget, 'Open file', filter = "XLS files (*.xls)")
 

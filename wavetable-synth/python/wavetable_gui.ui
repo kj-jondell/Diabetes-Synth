@@ -34,9 +34,9 @@
   <widget class="QComboBox" name="output_devices">
    <property name="geometry">
     <rect>
-     <x>110</x>
-     <y>20</y>
-     <width>141</width>
+     <x>130</x>
+     <y>50</y>
+     <width>151</width>
      <height>32</height>
     </rect>
    </property>
@@ -49,10 +49,10 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>20</y>
+     <x>30</x>
+     <y>50</y>
      <width>101</width>
-     <height>41</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
@@ -78,8 +78,8 @@
   <widget class="QComboBox" name="memory_size">
    <property name="geometry">
     <rect>
-     <x>110</x>
-     <y>60</y>
+     <x>130</x>
+     <y>110</y>
      <width>81</width>
      <height>32</height>
     </rect>
@@ -88,6 +88,9 @@
     <font>
      <pointsize>11</pointsize>
     </font>
+   </property>
+   <property name="currentIndex">
+    <number>1</number>
    </property>
    <item>
     <property name="text">
@@ -113,10 +116,10 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>60</y>
+     <x>30</x>
+     <y>110</y>
      <width>101</width>
-     <height>41</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
@@ -125,6 +128,97 @@
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
+  </widget>
+  <widget class="QPushButton" name="load_project">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>121</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Load project</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="project_name">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>10</y>
+     <width>251</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Project name: </string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>80</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Sample rate:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="sample_rate">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>80</y>
+     <width>81</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="currentIndex">
+    <number>1</number>
+   </property>
+   <item>
+    <property name="text">
+     <string>44100</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>48000</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>88200</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>96000</string>
+    </property>
+   </item>
   </widget>
  </widget>
  <resources/>

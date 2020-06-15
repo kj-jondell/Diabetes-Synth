@@ -18,13 +18,23 @@ class Interrupt(Exception):
 
 class Signals(QObject):
     progress = Signal(tuple)
+    centroids_signal = Signal(list)
+
+# Helper function
+#function taken from https://stackoverflow.com/questions/54032515/spectral-centroid-of-numpy-array
+def spectral_centroid(x, samplerate = 44100):
+    magnitudes = numpy.abs(numpy.fft.rfft(x))
+    length = len(x)
+    freqs = numpy.abs(numpy.fft.fftfreq(length, 1.0/samplerate)[:length//2+1])
+    magnitudes = magnitudes[:length//2+1]
+    return numpy.sum(magnitudes*freqs) / numpy.sum(magnitudes)
 
 # Logic for converting blood glucose levels into soundfiles
 class Model(QThread):
 
     def __init__(self, chosen_filename, sample_rate, buffer_size,
                 window_size, is_wavetable, write_file,
-                window_type, amt_output, output_filename, parent = None):
+                window_type, amt_output, output_filename = "", parent = None):
         QThread.__init__(self)
 
         self.filename = chosen_filename
@@ -39,11 +49,11 @@ class Model(QThread):
 
         self.signals = Signals()
         self.signals.progress.connect(parent.update_progressbar)
+        self.signals.centroids_signal.connect(parent.update_centroids)
 
     def run(self):
         self.window = WINDOWS[self.window_type](self.buffer_size, self.window_size if self.window_type == "Tukey" else None) #window function, to smoothen buffer TODO make selectable
         try:
-            self.centroids = list()
             self.update_progressbar((5, "Opening datafile"))
 
             self.sheet = xlrd.open_workbook(self.filename).sheet_by_index(SHEET_NO) 
@@ -59,20 +69,12 @@ class Model(QThread):
             self.extract_output(self.spl)
             self.update_progressbar((100, "Done"))
         except Interrupt:
-            return
+            return 
 
     def update_progressbar(self, args):
         if self.isInterruptionRequested():
             raise (Interrupt())
         self.signals.progress.emit(args)
-
-    #function taken from https://stackoverflow.com/questions/54032515/spectral-centroid-of-numpy-array
-    def spectral_centroid(self, x, samplerate = 44100):
-        magnitudes = numpy.abs(numpy.fft.rfft(x))
-        length = len(x)
-        freqs = numpy.abs(numpy.fft.fftfreq(length, 1.0/samplerate)[:length//2+1])
-        magnitudes = magnitudes[:length//2+1]
-        return numpy.sum(magnitudes*freqs) / numpy.sum(magnitudes)
 
     def parse_data(self, sheet):
         amt_data = sheet.nrows - ROW_OFFSET
@@ -94,6 +96,7 @@ class Model(QThread):
 
     ### output extraction
     def extract_output(self, spl):
+        centroids = list()
         progress_division = (100-self.progress)/(self.amt_output*3) 
         for sample_index in range(0, self.amt_output):
             self.progress += progress_division 
@@ -110,6 +113,10 @@ class Model(QThread):
 
             for ind, w_sample in enumerate(self.window):
                 sample[ind] = sample[ind]*w_sample
+
+            centroids.append(spectral_centroid(sample, self.sample_rate)) #prints spectral centroids (before formatting as wavetable but after windowing!)
+            self.signals.centroids_signal.emit(centroids)
+
             if self.is_wavetable: #SuperCollider wavetable format
                 for ind, c_sample in enumerate(sample):
                     if ind % 2 == 0:
@@ -120,6 +127,5 @@ class Model(QThread):
             self.progress += progress_division 
             self.update_progressbar((self.progress, None))
 
-            self.centroids.append(self.spectral_centroid(sample, self.sample_rate)) #prints spectral centroids (TODO: print as list)
             if self.write_file:
                 sf.write(self.output_filename.format(sample_index+1), sample, self.sample_rate) 

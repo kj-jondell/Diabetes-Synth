@@ -1,4 +1,6 @@
-### TODO: save default settings
+### TODO: 1. save default settings
+### 2. Allow loading different settings 
+
 import sys
 from Interface import Interface
 from PySide2.QtWidgets import QApplication

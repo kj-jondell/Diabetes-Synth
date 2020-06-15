@@ -9,7 +9,7 @@
 // -------------------- PARSE SETTINGS FILE -------------------- //
 var settings = Dictionary.new;
 var settings_file = CSVFileReader.read("../settings");
-var device, memsize, order, numframes, filename; //settings variable declaration
+var device, memsize, order, numframes, filename, samplerate; //settings variable declaration
 
 if(settings_file.size == 0){ // exit program if settings file not found TODO defaults
     0.exit;
@@ -26,11 +26,13 @@ memsize = settings["memsize"][1..].asInteger;
 order = settings["order"][1..].split($ ).asInteger;
 numframes = settings["numframes"][1..].asInteger;
 filename = settings["filename"][1..];
+samplerate = settings["samplerate"][1..];
 
 // -------------------- PREPARATIONS -------------------- //
 
 Server.default.options.device = device;
 Server.default.options.memSize = memsize;
+Server.default.options.sampleRate = samplerate;
 
 MIDIClient.init;
 MIDIIn.connectAll; //Choose mididevice...
@@ -41,9 +43,9 @@ Server.default.waitForBoot(
         var envelop, keys;
         var detune = 1.5, releaseTime = 2, attackTime = 0.01; //Default values
 
-        order.mirror.do({
+        order.mirror.do({ // TODO mirror? setting?
             arg index, count;
-            var url = File.getcwd++format(filename, index+1); //put samples somewhere else... 
+            var url = format(filename, index); //put samples somewhere else... 
             buffers.add(Buffer.read(s, path: url, numFrames: numframes)); 
         });
 

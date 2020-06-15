@@ -82,9 +82,9 @@
    <property name="geometry">
     <rect>
      <x>252</x>
-     <y>51</y>
+     <y>47</y>
      <width>81</width>
-     <height>16</height>
+     <height>20</height>
     </rect>
    </property>
    <property name="text">
@@ -271,17 +271,17 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>152</x>
-     <y>21</y>
+     <x>150</x>
+     <y>20</y>
      <width>91</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
     <string>Chosen file:</string>
    </property>
    <property name="alignment">
-    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
    </property>
   </widget>
   <widget class="QDoubleSpinBox" name="window_size">
@@ -377,9 +377,9 @@
    <property name="geometry">
     <rect>
      <x>32</x>
-     <y>141</y>
+     <y>136</y>
      <width>101</width>
-     <height>16</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
@@ -390,9 +390,9 @@
    <property name="geometry">
     <rect>
      <x>252</x>
-     <y>21</y>
+     <y>16</y>
      <width>81</width>
-     <height>16</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
