@@ -15,9 +15,10 @@ class Controller():
 
         self.progress = QProgressDialog("Creating files", "Cancel", 0, 100, self.view)
         self.progress.canceled.connect(self.canceled)
-        self.progress.setFixedWidth(self.progress.width() + 20)
+        self.progress.setFixedWidth(self.progress.width() + 20) #Margin and fixed to avoid annoying jumping
         self.progress.show()
 
+    #TODO delete written files (? or not? maybe a feature...)
     def canceled(self):
         self.model.requestInterruption()
         self.progress.setLabelText("Cancelling...")
@@ -28,6 +29,7 @@ class Controller():
             pass
         self.progress.hide()
 
+    # This slot is called from the Model when it is working...
     @Slot(tuple) #TODO make into dict instead...
     def update_progressbar(self, args):
         self.progress.setValue(args[0])
