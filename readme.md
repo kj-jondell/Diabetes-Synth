@@ -1,12 +1,12 @@
 # Glucose Level Wavetable Synthesizer
 A wavetable-synthesizer using blood glucose levels as periodic waveforms. Controllable using MIDI.
 
-## Python
+## Glucose Level Data Converter
 ### Usable data
 The program expects the usage of datasheets taken from [Diasend](https://www.diasend.com/) and has only been tested with the Abbott FreeStyle Libre (but should be usable with other CGMs and FGMs supported by Diasend, such as Dexcom G6). The file used by the program can be downloaded from the page "Share Data" and "Export Data" in Diasend. The automatically downloaded (.xls) file can be opened straight from the program ("Choose file").
 
 ### GUI program
-The Python code converts data taken from [Diasend](https://www.diasend.com/) and converts into periodic waveforms (in the form of wav-files). The data uses BSpline interpolation and selectable windowing. It is possible to output the samples straight into the SuperCollider [wavetable format](https://doc.sccode.org/Classes/Wavetable.html). It also outputs the information regarding spectral centroids of the waveforms.
+The program uses data taken from [Diasend](https://www.diasend.com/) and converts into periodic waveforms (in the form of wav-files). The data uses BSpline interpolation and selectable windowing. It is possible to output the samples straight into the SuperCollider [wavetable format](https://doc.sccode.org/Classes/Wavetable.html). It also outputs the information regarding spectral centroids of the waveforms.
 
 ![image](https://user-images.githubusercontent.com/30523857/84592134-968baf00-ae43-11ea-9e0a-e377a076c4a4.png)
 
@@ -36,6 +36,5 @@ python3 .
 ### Notes
 Diasend only allows exporting data from the last 202 days.
 
-## SuperCollider
-The SuperCollider code 
+## Wavetable Synthesizer
 
