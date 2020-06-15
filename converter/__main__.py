@@ -4,6 +4,7 @@
 ### 3. Implement centroids!
 ### 4. Clean up files when cancelled??
 ### 5. Rename View and Controller to better fit MVC-architechture
+### 6. Instead of option "write file" have a option for centroids!
 ### 
 ### Make both runnable as standalone AND integrated app with SuperCollider synth
 

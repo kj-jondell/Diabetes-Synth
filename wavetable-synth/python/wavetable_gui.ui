@@ -24,7 +24,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>400</width>
+    <width>500</width>
     <height>300</height>
    </size>
   </property>
@@ -32,6 +32,9 @@
    <string>Form</string>
   </property>
   <widget class="QComboBox" name="output_devices">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>130</x>
@@ -63,6 +66,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="run">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>40</x>
@@ -76,6 +82,9 @@
    </property>
   </widget>
   <widget class="QComboBox" name="memory_size">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>130</x>
@@ -138,6 +147,9 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="acceptDrops">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Load project</string>
    </property>
@@ -145,19 +157,19 @@
   <widget class="QLabel" name="project_name">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>250</x>
      <y>10</y>
-     <width>251</width>
+     <width>131</width>
      <height>31</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <pointsize>11</pointsize>
+     <pointsize>12</pointsize>
     </font>
    </property>
    <property name="text">
-    <string>Project name: </string>
+    <string>No chosen project</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -183,6 +195,9 @@
    </property>
   </widget>
   <widget class="QComboBox" name="sample_rate">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>130</x>
@@ -219,6 +234,30 @@
      <string>96000</string>
     </property>
    </item>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>10</y>
+     <width>81</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Project name:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
+   </property>
   </widget>
  </widget>
  <resources/>

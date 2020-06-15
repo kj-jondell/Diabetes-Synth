@@ -8,7 +8,7 @@ The program expects the usage of datasheets taken from [Diasend](https://www.dia
 ### GUI program
 The program uses data taken from [Diasend](https://www.diasend.com/) and converts into periodic waveforms (in the form of wav-files). The data uses BSpline interpolation and selectable windowing. It is possible to output the samples straight into the SuperCollider [wavetable format](https://doc.sccode.org/Classes/Wavetable.html). It also outputs the information regarding spectral centroids of the waveforms.
 
-![image](https://user-images.githubusercontent.com/30523857/84592134-968baf00-ae43-11ea-9e0a-e377a076c4a4.png)
+![image](https://user-images.githubusercontent.com/30523857/84710875-5d4b6000-af65-11ea-9305-9722ac31d660.png)
 
 ### Dependencies
 * SciPy

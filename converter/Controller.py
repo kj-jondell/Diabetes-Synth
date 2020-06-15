@@ -60,7 +60,7 @@ class Controller():
         self.centroids = centroids
 
     def update_settings(self):
-        if self.settings['write_file'] and self.centroids != None:
+        if self.settings['is_wavetable'] and self.centroids != None:
             settings_dict = {}
             settings_dict['numframes'] = str(self.settings['buffer_size'])
             settings_dict['filename'] = self.settings['output_filename'].format('%')

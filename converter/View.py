@@ -8,6 +8,15 @@ from pathlib import Path
 
 UI_FILE_NAME = str(Path(__file__).parent / "ui/convert_gui.ui")
 
+# TODO group objects that are settings control instead of hardcoded hack !!!
+def change_enabled_settings(widgets, exceptions = ["file_chooser"], enable = True):
+    for child in widgets.children():
+        if type(child) != QLabel and child.objectName() not in exceptions:
+            try: 
+                child.setEnabled(enable)
+            except:
+                pass
+
 class View(QMainWindow):
 
     def __init__(self, parent = None):
@@ -42,34 +51,21 @@ class View(QMainWindow):
         settings['buffer_size'] = (int)(self.central_widget.buffer_size.currentText())
         settings['window_size'] = self.central_widget.window_size.value() 
         settings['is_wavetable'] = self.central_widget.is_wavetable.isChecked() 
-        settings['write_file'] = self.central_widget.write_files.isChecked() 
         settings['window_type'] = self.central_widget.window_type.currentText() 
         settings['amt_output'] = self.central_widget.amt_files.value() 
 
-        if settings['write_file']:
-            chosen_path, filter_type = QFileDialog.getSaveFileName(self.central_widget, 'Save project', filter = "DIA project")
-            if chosen_path:
-                chosen_path += "/samples"
-                Path(chosen_path).mkdir(parents = True, exist_ok = True)
-                settings['output_filename'] = "{}/sample_{}".format(chosen_path, '{}.wav')
-                return settings 
-            else:
-                return None
-
-        return settings
+        chosen_path, filter_type = QFileDialog.getSaveFileName(self.central_widget, 'Save project', filter = "DIA project")
+        if chosen_path:
+            chosen_path += "/samples"
+            Path(chosen_path).mkdir(parents = True, exist_ok = True)
+            settings['output_filename'] = "{}/sample_{}".format(chosen_path, '{}.wav')
+            return settings 
+        else:
+            return None
     
     def choose_file(self):
         self.chosen_filename, filter_type = QFileDialog.getOpenFileName(self.central_widget, 'Open file', filter = "XLS files (*.xls)")
 
         if self.chosen_filename != "":
-            self.central_widget.filename.setText(self.chosen_filename)
-            self.change_enabled_settings()
-
-    # TODO group objects that are settings control instead of hardcoded hack !!!
-    def change_enabled_settings(self, enable = True):
-        for child in self.central_widget.children():
-            if type(child) != QLabel and child.objectName() != "file_chooser":
-                try: 
-                    child.setEnabled(enable)
-                except:
-                    pass
+            self.central_widget.filename.setText(Path(self.chosen_filename).name)
+            change_enabled_settings(self.central_widget)

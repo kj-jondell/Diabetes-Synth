@@ -33,7 +33,7 @@ def spectral_centroid(x, samplerate = 44100):
 class Model(QThread):
 
     def __init__(self, chosen_filename, sample_rate, buffer_size,
-                window_size, is_wavetable, write_file,
+                window_size, is_wavetable, 
                 window_type, amt_output, output_filename = "", parent = None):
         QThread.__init__(self)
 
@@ -42,7 +42,6 @@ class Model(QThread):
         self.buffer_size = buffer_size
         self.window_size = window_size
         self.is_wavetable = is_wavetable
-        self.write_file = write_file
         self.window_type = window_type
         self.amt_output = amt_output
         self.output_filename = output_filename
@@ -127,5 +126,4 @@ class Model(QThread):
             self.progress += progress_division 
             self.update_progressbar((self.progress, None))
 
-            if self.write_file:
-                sf.write(self.output_filename.format(sample_index+1), sample, self.sample_rate) 
+            sf.write(self.output_filename.format(sample_index+1), sample, self.sample_rate) 

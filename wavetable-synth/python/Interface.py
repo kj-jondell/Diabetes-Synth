@@ -11,12 +11,22 @@ SETTINGS_FILE = str(pathlib.Path(__file__).parent / "../../settings") #(move set
 UI_FILE_NAME = "wavetable_gui.ui" # Qt Designer ui file TODO fix path!
 WIDGETS_PAIRS = [('memory_size', 'numframes'), ('sample_rate', 'samplerate')]
 
+#TODO change these to shared module
 def read_settings(path):
     settings_dict = {}
     with open(path) as csvfile:
         reader = csv.reader(csvfile)
         settings_dict = {row[0]:row[1][1:] for row in reader}
     return settings_dict 
+
+# TODO group objects that are settings control instead of hardcoded hack !!!
+def change_enabled_settings(widgets, exceptions = ["file_chooser"], enable = True):
+    for child in widgets.children():
+        if type(child) != QLabel and child.objectName() not in exceptions:
+            try: 
+                child.setEnabled(enable)
+            except:
+                pass
 
 class Interface(QMainWindow):
 
@@ -40,11 +50,12 @@ class Interface(QMainWindow):
         self.chosen_project, filter_type = QFileDialog.getOpenFileName(self.central_widget, 'Open file', filter = "DIA project (*.dia)")
 
         if self.chosen_project:
-            self.central_widget.project_name.setText(self.chosen_project)
+            self.central_widget.project_name.setText(pathlib.Path(self.chosen_project).stem)
+            change_enabled_settings(self.central_widget, exceptions = ["load_project"])
 
-        settings = read_settings(self.chosen_project)
-        self.default_settings = {**self.default_settings, **settings} # merge setting dictionaries
-        self.load_settings()
+            settings = read_settings(self.chosen_project)
+            self.default_settings = {**self.default_settings, **settings} # merge setting dictionaries
+            self.load_settings()
 
     def load_view(self):
         self.ui_file = QFile(UI_FILE_NAME)
