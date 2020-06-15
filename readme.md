@@ -38,3 +38,12 @@ Diasend only allows exporting data from the last 202 days.
 
 ## Wavetable Synthesizer
 More info coming soon...
+
+### Dependencies
+* sounddevice
+
+### Running
+1. First make sure all dependencies are installed (using pip):
+```
+pip3 install sounddevice
+```

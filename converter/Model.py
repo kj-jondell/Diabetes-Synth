@@ -8,17 +8,6 @@ import soundfile as sf
 import xlrd
 from PySide2.QtCore import QThread, QObject, Signal, Slot                            
 
-### MODEL
-# SETTINGS
-SAMPLE_RATE = 48000
-BUFFER_SIZE = 2048
-WINDOW_SIZE = 0.1
-IS_WAVETABLE = False #Supercollider wavetable format
-WRITE_FILE = True
-WINDOW_TYPE = "Hann"
-AMT_OUTPUT = 3
-OUTPUT_FILENAME = "blodsocker_{}.wav"
-
 # CALIBRATION
 ROW_OFFSET = 5
 SHEET_NO = 1
@@ -30,7 +19,7 @@ class Interrupt(Exception):
 class Signals(QObject):
     progress = Signal(tuple)
 
-#TODO make into QRunnable instead (and not dataclass...)
+# Logic for converting blood glucose levels into soundfiles
 class Model(QThread):
 
     def __init__(self, chosen_filename, sample_rate, buffer_size,

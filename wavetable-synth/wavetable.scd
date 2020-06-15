@@ -8,8 +8,12 @@
 
 // -------------------- PARSE SETTINGS FILE -------------------- //
 var settings = Dictionary.new;
-var settings_file = CSVFileReader.read("settings");
+var settings_file = CSVFileReader.read("../settings");
 var device, memsize, order, numframes, filename; //settings variable declaration
+
+if(settings_file.size == 0){ // exit program if settings file not found TODO defaults
+    0.exit;
+};
 
 settings_file.do({
     arg value; 

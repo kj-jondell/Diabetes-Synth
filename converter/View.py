@@ -5,7 +5,7 @@ from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
 
-UI_FILE_NAME = "ui/form.ui" # Qt Designer ui file TODO fix path!
+UI_FILE_NAME = "convert_gui.ui" # Qt Designer ui file TODO fix path!
 
 class View(QMainWindow):
 
