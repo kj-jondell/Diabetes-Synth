@@ -47,3 +47,8 @@ More info coming soon...
 ```
 pip3 install sounddevice
 ```
+
+## Usage Examples 
+This synth is used in the following songs:
+* [sc-200322-231835](https://soundcloud.com/k-j-jondell/sc-200322-231835)
+
