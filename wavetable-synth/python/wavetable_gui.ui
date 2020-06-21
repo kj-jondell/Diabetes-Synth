@@ -65,7 +65,7 @@
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="run">
+  <widget class="QPushButton" name="run_button">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -81,14 +81,14 @@
     <string>Start synth</string>
    </property>
   </widget>
-  <widget class="QComboBox" name="memory_size">
+  <widget class="QComboBox" name="buffer_size">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="geometry">
     <rect>
      <x>130</x>
-     <y>110</y>
+     <y>150</y>
      <width>81</width>
      <height>32</height>
     </rect>
@@ -126,7 +126,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>110</y>
+     <y>80</y>
      <width>101</width>
      <height>31</height>
     </rect>
@@ -182,7 +182,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>80</y>
+     <y>120</y>
      <width>101</width>
      <height>31</height>
     </rect>
@@ -201,7 +201,7 @@
    <property name="geometry">
     <rect>
      <x>130</x>
-     <y>80</y>
+     <y>120</y>
      <width>81</width>
      <height>32</height>
     </rect>
@@ -315,6 +315,102 @@
      <string>Random</string>
     </property>
    </item>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>150</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Buffer size:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="memory_size">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>80</y>
+     <width>81</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="currentIndex">
+    <number>3</number>
+   </property>
+   <item>
+    <property name="text">
+     <string>8192</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>16384</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>24576</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>32768</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>65536</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QComboBox" name="ports">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>50</y>
+     <width>61</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>50</y>
+     <width>31</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Port:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
   </widget>
  </widget>
  <resources/>

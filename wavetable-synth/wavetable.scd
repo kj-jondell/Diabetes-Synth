@@ -3,12 +3,13 @@
 *       - Fix GUI
 *           - Run through Python! With csv settings and osc commands to control SuperCollider 
 *       - Make variable urls
+*       - 512 sample long waveforms are laggy...
 * © Karl Johannes Jondell
 */
 
 // -------------------- PARSE SETTINGS FILE -------------------- //
 var settings = Dictionary.new;
-var settings_file = CSVFileReader.read("../settings");
+var settings_file = CSVFileReader.read("../settings"); // TODO path of file from thisProcess.argv instead (from python)
 var device, memsize, order, numframes, filename, samplerate; //settings variable declaration
 
 if(settings_file.size == 0){ // exit program if settings file not found TODO defaults
@@ -27,12 +28,15 @@ order = settings["order"][1..].split($ ).asInteger;
 numframes = settings["numframes"][1..].asInteger;
 filename = settings["filename"][1..];
 samplerate = settings["samplerate"][1..];
+// TODO Raise better error when using corrupt settings file!
 
 // -------------------- PREPARATIONS -------------------- //
 
 Server.default.options.device = device;
 Server.default.options.memSize = memsize;
 Server.default.options.sampleRate = samplerate;
+
+// [device,memsize,order,numframes,filename,samplerate].postln;
 
 MIDIClient.init;
 MIDIIn.connectAll; //Choose mididevice...
@@ -53,13 +57,14 @@ Server.default.waitForBoot(
 
         //Envelop...
         //BUF OSC AS CONTROLBUS...
+        //TODO fix names
         SynthDef.new(
             \DiabetesPanEnvelop,
             {
                 arg freq = 440, velocity = 67, attackTime = 0.01, releaseTime = 0.1, pan = 0, sustainLevel = 0.6, detuneFactor = 1.0, buf = 1, outBus = 0, gate = 1;
                 var freq_ = freq*BrownianWalk.kr(0.0002);
                 var sig = VOsc3.ar(buf+LFTri.kr(0.04).unipolar(mul:velocity.linlin(0,127,1,15)), freq1:freq_, freq2:freq_*(1.0-(detuneFactor)), freq3:freq_*(1.0+(detuneFactor)), mul: Lag2.kr(velocity.linlin(0,127,-15,-6).dbamp));
-                var filter = BLowPass4.ar(sig, freq*Lag2.kr(velocity.linlin(0,127,1.0,20.0)), Lag2.kr(velocity.linlin(0,127,1.0,2.0)));
+                var filter = BLowPass4.ar(sig, freq*Lag2.kr(velocity.linlin(0,127,1.0,5.0)), Lag2.kr(velocity.linlin(0,127,1.0,2.0)));//TODO FIX blowpasss cutoff frequency!!
                 var env = filter*EnvGen.ar(Env.asr(attackTime: attackTime, sustainLevel: sustainLevel, releaseTime: releaseTime, curve: -4.0), gate: gate, doneAction: Done.freeSelf);
                 var panned = Pan2.ar(env, pan);
                 Out.ar(outBus, LeakDC.ar(panned));
@@ -79,7 +84,7 @@ Server.default.waitForBoot(
                     keys[num] = nil;
                 }
             );
-        }, chan: 5
+        }, chan: 5 // TODO variable
     ).add;
 
     MIDIdef.noteOn(\diabetesOn, 
@@ -89,9 +94,10 @@ Server.default.waitForBoot(
             {
                 keys[num] = Synth.new(\DiabetesPanEnvelop, [\releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \buf, 28.0.rand, \velocity, vel, \freq, num.midicps, \pan, rrand(-0.25,0.25)]);
             });
-        }, chan: 5
+        }, chan: 5 // TODO variable
     ).add;
 
+    // TODO make into cc matrix? 
     MIDIdef.cc(\cc,
         {
             arg vel, num;
