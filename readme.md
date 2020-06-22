@@ -23,14 +23,15 @@ The program uses data taken from [Diasend](https://www.diasend.com/) and convert
 ```
 pip3 install scipy numpy soundfile xlrd pyside2 python-dateutil
 ```
-2. Then execute the following command to install and run the program. 
+More to come...
+<!-- 2. Then execute the following command to install and run the program. 
 ```
 git clone https://github.com/kj-jondell/Diabetes-Synth.git ; cd Diabetes-Synth/python/ ; python3 .
 ```
 3. To run the program after installation, simply cd into the python-directory and execute:
 ```
 python3 .
-```
+``` -->
 <!-- ### Release page -->
 
 ### Notes
