@@ -10,7 +10,11 @@
 // -------------------- PARSE SETTINGS FILE -------------------- //
 var settings = Dictionary.new;
 var settings_file = CSVFileReader.read("../settings"); // TODO path of file from thisProcess.argv instead (from python)
+var osc_port = 1121;
+var keys = nil!128;
 var device, memsize, order, numframes, filename, samplerate; //settings variable declaration
+var setReleaseTime, setAttackTime, setBufferNum, setDetuneFactor, setSustainLevel, setDecayTime;
+var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8; //Default values
 
 if(settings_file.size == 0){ // exit program if settings file not found TODO defaults
     0.exit;
@@ -30,7 +34,63 @@ filename = settings["filename"][1..];
 samplerate = settings["samplerate"][1..];
 // TODO Raise better error when using corrupt settings file!
 
+setBufferNum = {
+    arg vel = 0;
+    keys.do({
+        arg key;
+        bufferNum = vel.linlin(0, 255, 1, order.size);
+        key.set(\buf, bufferNum);
+    });
+};
+
+setDecayTime = {
+    arg vel = 0;
+    keys.do({
+        arg key;
+        decayTime = vel.linlin(0.0,127.0, 0.1, 1.5);
+        key.set(\decayTime, decayTime);
+    });
+};
+
+setSustainLevel = {
+    arg vel = 0;
+    keys.do({
+        arg key;
+        sustainLevel = vel.linlin(0.0,127.0, 0.2, 1);
+        key.set(\sustainLevel, sustainLevel);
+    });
+};
+
+setAttackTime = {
+    arg vel = 0;
+    keys.do({
+        arg key;
+        attackTime = vel.linlin(0.0,127.0,0.001,2.5);
+        key.set(\attackTime, attackTime);
+    });
+};
+
+setDetuneFactor = {
+    arg vel = 0;
+    keys.do({
+        arg key;
+        detune = vel.linlin(0.0,127.0,0,1.5);
+        key.set(\detuneFactor, detune);
+    });
+};
+
+setReleaseTime = {
+    arg vel = 0;
+    keys.do({
+        arg key;
+        releaseTime = vel.linlin(0.0,127.0, 1,5);
+        key.set(\releaseTime, releaseTime);
+    });
+};
+
 // -------------------- PREPARATIONS -------------------- //
+
+thisProcess.openUDPPort(osc_port);
 
 Server.default.options.device = device;
 Server.default.options.memSize = memsize;
@@ -44,8 +104,7 @@ MIDIIn.connectAll; //Choose mididevice...
 Server.default.waitForBoot(
     {
         var buffers = Array.new(order.size);
-        var envelop, keys;
-        var detune = 1.5, releaseTime = 2, attackTime = 0.01; //Default values
+        var envelop;
 
         order.mirror.do({ // TODO mirror? setting?
             arg index, count;
@@ -58,22 +117,21 @@ Server.default.waitForBoot(
         //Envelop...
         //BUF OSC AS CONTROLBUS...
         //TODO fix names
+        //TODO bufferum... (wrapping/offset)..
         SynthDef.new(
             \DiabetesPanEnvelop,
             {
-                arg freq = 440, velocity = 67, attackTime = 0.01, releaseTime = 0.1, pan = 0, sustainLevel = 0.6, detuneFactor = 1.0, buf = 1, outBus = 0, gate = 1;
+                arg freq = 440, velocity = 67, attackTime = 0.01, releaseTime = 0.1, decayTime = 0.8, pan = 0, sustainLevel = 0.6, detuneFactor = 1.0, buf = 1, outBus = 0, gate = 1;
                 var freq_ = freq*BrownianWalk.kr(0.0002);
                 var sig = VOsc3.ar(buf+LFTri.kr(0.04).unipolar(mul:velocity.linlin(0,127,1,15)), freq1:freq_, freq2:freq_*(1.0-(detuneFactor)), freq3:freq_*(1.0+(detuneFactor)), mul: Lag2.kr(velocity.linlin(0,127,-15,-6).dbamp));
-                var filter = BLowPass4.ar(sig, freq*Lag2.kr(velocity.linlin(0,127,1.0,5.0)), Lag2.kr(velocity.linlin(0,127,1.0,2.0)));//TODO FIX blowpasss cutoff frequency!!
-                var env = filter*EnvGen.ar(Env.asr(attackTime: attackTime, sustainLevel: sustainLevel, releaseTime: releaseTime, curve: -4.0), gate: gate, doneAction: Done.freeSelf);
+                var filter = BLowPass4.ar(sig, freq, Lag2.kr(velocity.linlin(0,127,1.0,2.0)));//TODO FIX blowpasss cutoff frequency!!
+                var env = filter*EnvGen.ar(Env.adsr(attackTime: attackTime, decayTime: decayTime, sustainLevel: sustainLevel, releaseTime: releaseTime, curve: -4.0), gate: gate, doneAction: Done.freeSelf);
                 var panned = Pan2.ar(env, pan);
                 Out.ar(outBus, LeakDC.ar(panned));
             }
         ).add;
 
         s.sync;
-
-        keys = nil!128;
 
         MIDIdef.noteOff(\diabetesOff,
             {
@@ -92,7 +150,7 @@ Server.default.waitForBoot(
             arg vel,num;
             if(keys[num].isNil,
             {
-                keys[num] = Synth.new(\DiabetesPanEnvelop, [\releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \buf, 28.0.rand, \velocity, vel, \freq, num.midicps, \pan, rrand(-0.25,0.25)]);
+                keys[num] = Synth.new(\DiabetesPanEnvelop, [\releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \buf, bufferNum, \velocity, vel, \freq, num.midicps, \pan, rrand(-0.25,0.25)]);
             });
         }, chan: 5 // TODO variable
     ).add;
@@ -103,28 +161,38 @@ Server.default.waitForBoot(
             arg vel, num;
             switch(num,
                 16, {
-                    keys.do({
-                        arg key;
-                        detune = vel.linlin(0.0,127.0,0,1.5);
-                        key.set(\detuneFactor, detune);
-                    });
+                    setDetuneFactor.value(vel);
                 },
                 17, {
-                    keys.do({
-                        arg key;
-                        releaseTime = vel.linlin(0.0,127.0, 1,5);
-                        key.set(\releaseTime, releaseTime);
-                    });
+                    setReleaseTime.value(vel);
                 },
                 18, {
-                    keys.do({
-                        arg key;
-                        attackTime = vel.linlin(0.0,127.0,0.001,2.5);
-                        key.set(\attackTime, attackTime);
-                    });
+                    setAttackTime.value(vel);
+                },
+                19, {
+                    setDecayTime.value(vel);
+                },
+                20, {
+                    setSustainLevel.value(vel);
                 }
             );
 
         }
     ).add;
+
+    // Function accepting osc input from python-controller!
+    thisProcess.addOSCRecvFunc(
+        { |msg, time, addr|
+            switch(
+                msg[0],
+                '/attack', {setAttackTime.value(msg[1]);},
+                '/decay', {setDecayTime.value(msg[1]);},
+                '/sustain', {setSustainLevel.value(msg[1]);},
+                '/detune_factor', {setDetuneFactor.value(msg[1]);},
+                '/buffer_no', {setBufferNum.value(msg[1]);},
+                '/release', {setReleaseTime.value(msg[1]);}
+            );
+        };
+    );
+
 });

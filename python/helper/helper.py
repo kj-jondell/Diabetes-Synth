@@ -24,3 +24,6 @@ def change_enabled_settings(widgets, exceptions = ["file_chooser"], enable = Tru
             except:
                 pass
 
+def list_to_string(input_list = []):
+    return str(input_list)[1:-1].replace(',', '')
+

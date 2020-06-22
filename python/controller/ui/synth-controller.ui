@@ -190,7 +190,7 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>127</number>
+     <number>255</number>
     </property>
     <property name="wrapping">
      <bool>false</bool>

@@ -2,7 +2,7 @@
 ### 2. Allow loading different settings 
 
 import sys
-from controller.Controller import Controller
+from python.controller.Controller import Controller
 from PySide2.QtWidgets import QApplication
 
 if __name__ == "__main__":
