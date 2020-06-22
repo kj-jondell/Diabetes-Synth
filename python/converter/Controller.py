@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QApplication, QProgressDialog 
-from View import View  
-from Model import Model
-from PySide2.QtCore import Signal, Slot                            
+from converter.View import View  
+from converter.Model import Model
+from PySide2.QtCore import Signal, Slot, Qt 
 import numpy 
 import csv
 from pathlib import Path
@@ -32,7 +32,7 @@ class Controller():
         self.model.finished.connect(self.update_settings)
         self.model.start()
 
-        self.progress = QProgressDialog("Creating files", "Cancel", 0, 100, self.view)
+        self.progress = QProgressDialog("Creating files", "Cancel", 0, 100, self.view, Qt.WindowStaysOnTopHint)
         self.progress.canceled.connect(self.canceled)
         self.progress.setFixedWidth(self.progress.width() + 20) #Margin and fixed to avoid annoying jumping
         self.progress.show()
@@ -43,6 +43,7 @@ class Controller():
         self.progress.setLabelText("Cancelling...")
         self.progress.setEnabled(False)
         self.progress.show()
+        self.progress.activateWindow()
         QApplication.instance().processEvents()
         while self.model.isRunning(): #wait until model is finished
             pass

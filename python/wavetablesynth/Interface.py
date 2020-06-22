@@ -5,42 +5,21 @@ from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
 import sounddevice 
-import csv, pathlib
+import csv
+from pathlib import Path
+import python.helper.helper as helper
 
-SETTINGS_FILE = str(pathlib.Path(__file__).parent / "../../settings") #(move settings to shared module)
-UI_FILE_NAME = "wavetable_gui.ui" # Qt Designer ui file TODO fix path!
+SETTINGS_FILE = str(Path(__file__).parent / "../../settings") #(move settings to shared module)
+UI_FILE_NAME = str(Path(__file__).parent / "ui/wavetable_gui.ui") # Qt Designer ui file TODO fix path!
 WIDGETS_PAIRS = [('buffer_size', 'numframes'), ('sample_rate', 'samplerate'), ('memory_size', 'memsize')]
 WIDGET_LOAD_SEPARATELY = [('output_devices', 'device')]
-
-#TODO change these to shared module
-def read_settings(path):
-    settings_dict = {}
-    with open(path) as csvfile:
-        reader = csv.reader(csvfile)
-        settings_dict = {row[0]:row[1][1:] for row in reader}
-    return settings_dict 
-
-def write_settings(settings_dict, path):
-    with open(path, 'w') as csvfile:
-        writer = csv.writer(csvfile)
-        for value in settings_dict:
-            writer.writerow([value, " "+ settings_dict[value]])
-
-# TODO group objects that are settings control instead of hardcoded hack !!!
-def change_enabled_settings(widgets, exceptions = ["file_chooser"], enable = True):
-    for child in widgets.children():
-        if type(child) != QLabel and child.objectName() not in exceptions:
-            try: 
-                child.setEnabled(enable)
-            except:
-                pass
 
 class Interface(QMainWindow):
 
     def __init__(self, parent = None):
         QMainWindow.__init__(self)
 
-        self.settings = read_settings(SETTINGS_FILE)
+        self.settings = helper.read_settings(SETTINGS_FILE)
 
         self.load_view()
         self.load_output_devices(self.settings['device'])
@@ -65,7 +44,7 @@ class Interface(QMainWindow):
         self.chosen_project, filter_type = QFileDialog.getOpenFileName(self.central_widget, 'Open file', filter = "DIA project (*.dia)")
 
         if self.chosen_project:
-            self.central_widget.project_name.setText(pathlib.Path(self.chosen_project).stem)
+            self.central_widget.project_name.setText(Path(self.chosen_project).stem)
             change_enabled_settings(self.central_widget, exceptions = ["load_project"])
 
             imported_settings = read_settings(self.chosen_project)

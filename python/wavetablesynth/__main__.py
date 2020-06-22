@@ -2,7 +2,7 @@
 ### 2. Allow loading different settings 
 
 import sys
-from Interface import Interface
+from python.wavetablesynth.Interface import Interface
 from PySide2.QtWidgets import QApplication
 
 if __name__ == "__main__":

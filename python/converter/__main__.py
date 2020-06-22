@@ -9,7 +9,7 @@
 ### Make both runnable as standalone AND integrated app with SuperCollider synth
 
 import sys
-from Controller import Controller 
+from converter.Controller import Controller 
 from PySide2.QtWidgets import QApplication
 
 if __name__ == "__main__":

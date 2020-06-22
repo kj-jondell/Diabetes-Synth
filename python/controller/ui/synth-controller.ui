@@ -10,10 +10,28 @@
     <height>300</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>412</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>412</width>
+    <height>300</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QGroupBox" name="groupBox">
+  <widget class="QGroupBox" name="envelope">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -25,7 +43,7 @@
    <property name="title">
     <string>Envelope</string>
    </property>
-   <widget class="QDial" name="dial_5">
+   <widget class="QDial" name="attack">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -33,6 +51,9 @@
       <width>41</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -53,7 +74,7 @@
      <string>Attack</string>
     </property>
    </widget>
-   <widget class="QDial" name="dial_6">
+   <widget class="QDial" name="decay">
     <property name="geometry">
      <rect>
       <x>60</x>
@@ -61,6 +82,9 @@
       <width>41</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -81,7 +105,7 @@
      <string>Decay</string>
     </property>
    </widget>
-   <widget class="QDial" name="dial_7">
+   <widget class="QDial" name="sustain">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -89,6 +113,9 @@
       <width>41</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
     </property>
    </widget>
    <widget class="QLabel" name="label_3">
@@ -109,7 +136,7 @@
      <string>Sustain</string>
     </property>
    </widget>
-   <widget class="QDial" name="dial_8">
+   <widget class="QDial" name="release">
     <property name="geometry">
      <rect>
       <x>60</x>
@@ -117,6 +144,9 @@
       <width>41</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -138,7 +168,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox_2">
+  <widget class="QGroupBox" name="buffer">
    <property name="geometry">
     <rect>
      <x>140</x>
@@ -150,7 +180,7 @@
    <property name="title">
     <string>Buffer</string>
    </property>
-   <widget class="QDial" name="dial_9">
+   <widget class="QDial" name="buffer_no">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -158,6 +188,12 @@
       <width>41</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
+    </property>
+    <property name="wrapping">
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QLabel" name="label_5">
@@ -179,7 +215,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox_3">
+  <widget class="QGroupBox" name="tuning">
    <property name="geometry">
     <rect>
      <x>270</x>
@@ -191,7 +227,7 @@
    <property name="title">
     <string>Tuning</string>
    </property>
-   <widget class="QDial" name="dial_10">
+   <widget class="QDial" name="detune_factor">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -199,6 +235,9 @@
       <width>41</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
