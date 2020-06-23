@@ -4,9 +4,12 @@ from PySide2.QtWidgets import QLabel, QWidget
 #TODO change these to shared module
 def read_settings(path):
     settings_dict = {}
-    with open(path) as csvfile:
-        reader = csv.reader(csvfile)
-        settings_dict = {row[0]:row[1][1:] for row in reader}
+    try:
+        with open(path) as csvfile:
+            reader = csv.reader(csvfile)
+            settings_dict = {row[0]:row[1][1:] for row in reader}
+    except FileNotFoundError:
+        pass # ignore missing settings file!
     return settings_dict 
 
 def write_settings(settings_dict, path):
