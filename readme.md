@@ -17,13 +17,11 @@ The program uses data taken from [Diasend](https://www.diasend.com/) and convert
 * dateutil
 * xlrd
 * PySide2 (Qt for Python)
-* python-osc
-* sounddevice
 
 ### Running
 1. First make sure all dependencies are installed (using pip):
 ```
-pip3 install scipy numpy soundfile xlrd pyside2 python-dateutil python-osc sounddevice
+pip3 install scipy numpy soundfile xlrd pyside2 python-dateutil 
 ```
 2. Then execute the following command to install and run the program. 
 ```
@@ -43,11 +41,12 @@ More info coming soon...
 
 ### Dependencies
 * sounddevice
+* python-osc
 
 ### Running
 1. First make sure all dependencies are installed (using pip):
 ```
-pip3 install sounddevice
+pip3 install sounddevice python-osc
 ```
 
 ## Usage Examples 
