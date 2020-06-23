@@ -1,13 +1,16 @@
 import sys 
-from PySide2.QtWidgets import (QMainWindow, QDial)
-from PySide2.QtCore import Slot, Qt, QFile, QIODevice
+from PySide2.QtWidgets import QMainWindow, QDial, QApplication
+from PySide2.QtCore import Slot, Qt, QFile, QThread, QIODevice
 from PySide2.QtUiTools import QUiLoader
-from pythonosc import udp_client 
-from argparse import ArgumentParser 
+from PySide2.QtNetwork import QUdpSocket, QHostAddress
+from pythonosc import udp_client
+from pythonosc.parsing import osc_types
 from pathlib import Path
+import asyncio
 
 UI_FILE_NAME = str(Path(__file__).parent / "ui/synth-controller.ui") # Qt Designer ui file TODO fix path!
-OSC_PORT = 1121
+OSC_SEND_SETTINGS = ("127.0.0.1", 1121)
+OSC_RECEIVE_PORT = 1122
 
 class Controller(QMainWindow):
 
@@ -16,6 +19,7 @@ class Controller(QMainWindow):
 
         self.load_view()
         self.load_client()
+        self.load_server()
 
         for dial in self.central_widget.findChildren(QDial):
                 dial.valueChanged.connect(self.dial_change)
@@ -26,18 +30,26 @@ class Controller(QMainWindow):
         self.show()
 
     def dial_change(self, value):
-        #pass
-        #print(self.sender().objectName())
         self.client.send_message("/{}".format(self.sender().objectName()), int(value))
 
+    def load_server(self):
+        self.udpSocket = QUdpSocket(self)
+        self.udpSocket.bind(OSC_RECEIVE_PORT)
+        self.udpSocket.readyRead.connect(self.parse_udp)
+
+    def parse_udp(self):
+        while self.udpSocket.hasPendingDatagrams():
+            datagram, host, port = self.udpSocket.readDatagram(self.udpSocket.pendingDatagramSize())
+            address, index = osc_types.get_string(bytes(datagram), 0)
+            data, index = osc_types.get_int(bytes(datagram), index+4) # TODO Why +4 needed?
+
+            widget = self.central_widget.findChild(QDial, address[1:])
+            if widget:
+                widget.setValue(data)
+
     def load_client(self):
-        #Setting up network things
-        self.parser = ArgumentParser()
-        self.parser.add_argument("--ip", default="127.0.0.1")
-        self.parser.add_argument("--port", default=OSC_PORT)
-        args = self.parser.parse_args()
         #UDP client
-        self.client = udp_client.SimpleUDPClient(args.ip, args.port)
+        self.client = udp_client.SimpleUDPClient(*OSC_SEND_SETTINGS)
 
     def load_view(self):
         self.ui_file = QFile(UI_FILE_NAME)
