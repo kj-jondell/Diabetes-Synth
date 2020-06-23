@@ -22,7 +22,8 @@ class Interface(QMainWindow):
         self.settings = helper.read_settings(SETTINGS_FILE)
 
         self.load_view()
-        self.load_output_devices(self.settings['device'])
+        if self.settings:
+            self.load_output_devices(self.settings['device'])
         self.load_settings()
 
         self.central_widget.load_project.clicked.connect(self.choose_project)
