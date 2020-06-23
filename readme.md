@@ -17,11 +17,12 @@ The program uses data taken from [Diasend](https://www.diasend.com/) and convert
 * dateutil
 * xlrd
 * PySide2 (Qt for Python)
+* python-osc
 
 ### Running
 1. First make sure all dependencies are installed (using pip):
 ```
-pip3 install scipy numpy soundfile xlrd pyside2 python-dateutil
+pip3 install scipy numpy soundfile xlrd pyside2 python-dateutil python-osc
 ```
 More to come...
 <!-- 2. Then execute the following command to install and run the program. 
