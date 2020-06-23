@@ -12,7 +12,7 @@ var settings_file = CSVFileReader.read("../settings"); // TODO path of file from
 var osc_port = 1121; //TODO read from settings file (or argument when started)!
 var osc_send = NetAddr.new("127.0.0.1", 1122);
 var keys = nil!128;
-var device, memsize, order, numframes, filename, samplerate; //settings variable declaration
+var device, memsize, order, numframes, filename, samplerate, outbus = 0, midichannel = 5; //settings variable declaration
 var setDialParameter;
 var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8; //Default values
 
@@ -40,7 +40,6 @@ samplerate = settings["samplerate"][1..];
 
 // -------------------- SCALING FUNCTIONS -------------------- //
 
-//TODO load from other file (?)
 setDialParameter = {
     arg vel, parameter;
     var value, name = dialList[parameter];
@@ -88,10 +87,8 @@ Server.default.options.device = device;
 Server.default.options.memSize = memsize;
 Server.default.options.sampleRate = samplerate;
 
-// [device,memsize,order,numframes,filename,samplerate].postln;
-
 MIDIClient.init;
-MIDIIn.connectAll; //Choose mididevice...
+MIDIIn.connectAll; //Choose mididevice... TODO
 
 Server.default.waitForBoot(
     {
@@ -134,7 +131,7 @@ Server.default.waitForBoot(
                     keys[num] = nil;
                 }
             );
-        }, chan: 5 // TODO variable
+        }, chan: midichannel 
     ).add;
 
     MIDIdef.noteOn(\diabetesOn, 
@@ -142,9 +139,9 @@ Server.default.waitForBoot(
             arg vel,num;
             if(keys[num].isNil,
             {
-                keys[num] = Synth.new(\DiabetesPanEnvelop, [\releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \bufferNum, bufferNum, \velocity, vel, \freq, num.midicps, \pan, rrand(-0.25,0.25)]);
+                keys[num] = Synth.new(\DiabetesPanEnvelop, [\outBus, outbus, \releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \bufferNum, bufferNum, \velocity, vel, \freq, num.midicps, \pan, rrand(-0.25,0.25)]);
             });
-        }, chan: 5 // TODO variable
+        }, chan: midichannel
     ).add;
 
     MIDIdef.cc(\cc,
