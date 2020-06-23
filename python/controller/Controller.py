@@ -42,6 +42,7 @@ class Controller(QMainWindow):
             datagram, host, port = self.udpSocket.readDatagram(self.udpSocket.pendingDatagramSize())
             address, index = osc_types.get_string(bytes(datagram), 0)
             data, index = osc_types.get_int(bytes(datagram), index+4) # TODO Why +4 needed?
+            #TODO check address against list what to do
 
             widget = self.central_widget.findChild(QDial, address[1:])
             if widget:

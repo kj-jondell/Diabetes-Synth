@@ -12,7 +12,9 @@ import python.helper.helper as helper
 SETTINGS_FILE = str(Path(__file__).parent / "../../settings") #(move settings to shared module)
 UI_FILE_NAME = str(Path(__file__).parent / "ui/wavetable_gui.ui") # Qt Designer ui file TODO fix path!
 WIDGETS_PAIRS = [('buffer_size', 'numframes'), ('sample_rate', 'samplerate'), ('memory_size', 'memsize')]
-WIDGET_LOAD_SEPARATELY = [('output_devices', 'device')]
+WIDGET_LOAD_SEPARATELY = [('output_devices', 'device'), ('ports', 'port')]
+
+AMT_CHANNELS = 2 #TODO variable...
 
 class Interface(QMainWindow):
 
@@ -25,6 +27,8 @@ class Interface(QMainWindow):
         if self.settings:
             self.load_output_devices(self.settings['device'])
         self.load_settings()
+
+        #helper.change_enabled_settings(self.central_widget, exceptions = ["load_project"]) # TODO TEMPORARY!!!! must be removed!
 
         self.central_widget.load_project.clicked.connect(self.choose_project)
         self.central_widget.run_button.clicked.connect(self.start_synth)
@@ -39,16 +43,16 @@ class Interface(QMainWindow):
         for name, value in WIDGETS_PAIRS + WIDGET_LOAD_SEPARATELY:
             widget = getattr(self.central_widget, name)
             self.settings[value] = widget.currentText()
-        write_settings(self.settings, SETTINGS_FILE)
+        helper.write_settings(self.settings, SETTINGS_FILE)
 
     def choose_project(self):
         self.chosen_project, filter_type = QFileDialog.getOpenFileName(self.central_widget, 'Open file', filter = "DIA project (*.dia)")
 
         if self.chosen_project:
             self.central_widget.project_name.setText(Path(self.chosen_project).stem)
-            change_enabled_settings(self.central_widget, exceptions = ["load_project"])
+            helper.change_enabled_settings(self.central_widget, exceptions = ["load_project"])
 
-            imported_settings = read_settings(self.chosen_project)
+            imported_settings = helper.read_settings(self.chosen_project)
             self.settings = {**self.settings, **imported_settings} # merge setting dictionaries
             self.load_settings()
 
@@ -66,14 +70,27 @@ class Interface(QMainWindow):
             print(self.loader.errorString())
             sys.exit(-1)
 
+    def load_ports(self, current_text):
+        ports = self.central_widget.ports
+        ports.clear()
+        amt_outputs = AMT_CHANNELS
+        for device in sounddevice.query_devices():
+            if device['name'] == current_text:
+                amt_outputs = device['max_output_channels']
+        for port in range(1, amt_outputs, AMT_CHANNELS): # 2 because stereo (works best with ableton)?) TODO implement multichannel!
+            ports.addItem("{}-{}". format(port, port+(AMT_CHANNELS-1)))
+
     def load_output_devices(self, default_device):
         output_devices = self.central_widget.output_devices
+        output_devices.currentTextChanged.connect(self.load_ports)
+
         for device in sounddevice.query_devices():
-            if device['max_output_channels'] > 0:
+            if device['max_output_channels'] >= AMT_CHANNELS:
                 name = device['name']
                 output_devices.addItem(name)
                 if name == default_device:
                     output_devices.setCurrentIndex(output_devices.count()-1) # device index
+                    self.load_ports(name)
                     
     def load_settings(self):
         for pair in WIDGETS_PAIRS:

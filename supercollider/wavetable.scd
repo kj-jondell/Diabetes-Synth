@@ -12,7 +12,7 @@ var settings_file = CSVFileReader.read("../settings"); // TODO path of file from
 var osc_port = 1121; //TODO read from settings file (or argument when started)!
 var osc_send = NetAddr.new("127.0.0.1", 1122);
 var keys = nil!128;
-var device, memsize, order, numframes, filename, samplerate, outbus = 0, midichannel = 5; //settings variable declaration
+var device, memsize, order, numframes, filename, samplerate, ports, outbus = 0, midichannel = 5; //settings variable declaration
 var setDialParameter;
 var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8; //Default values
 
@@ -36,6 +36,9 @@ order = settings["order"][1..].split($ ).asInteger;
 numframes = settings["numframes"][1..].asInteger;
 filename = settings["filename"][1..];
 samplerate = settings["samplerate"][1..];
+ports = settings["port"][1..].split($-);
+outbus = ports[0].asInteger-1;
+
 // TODO Raise better error when using corrupt settings file!
 
 // -------------------- SCALING FUNCTIONS -------------------- //
@@ -86,6 +89,7 @@ thisProcess.openUDPPort(osc_port);
 Server.default.options.device = device;
 Server.default.options.memSize = memsize;
 Server.default.options.sampleRate = samplerate;
+Server.default.options.numOutputBusChannels = ports[1].asInteger;
 
 MIDIClient.init;
 MIDIIn.connectAll; //Choose mididevice... TODO
