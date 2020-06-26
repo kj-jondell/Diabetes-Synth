@@ -5,9 +5,9 @@ from PySide2.QtCore import Signal, Slot, Qt
 import numpy 
 import csv
 from pathlib import Path
-import python.helper as helper
+import python.helper.helper as helper
 
-class Controller():
+class Converter():
 
     def __init__(self):
         self.view = View(self)

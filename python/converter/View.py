@@ -5,17 +5,9 @@ from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
 from pathlib import Path
+import python.helper.helper as helper
 
 UI_FILE_NAME = str(Path(__file__).parent / "ui/convert_gui.ui")
-
-# TODO group objects that are settings control instead of hardcoded hack !!!
-def change_enabled_settings(widgets, exceptions = ["file_chooser"], enable = True):
-    for child in widgets.children():
-        if type(child) != QLabel and child.objectName() not in exceptions:
-            try: 
-                child.setEnabled(enable)
-            except:
-                pass
 
 class View(QMainWindow):
 
@@ -68,4 +60,4 @@ class View(QMainWindow):
 
         if self.chosen_filename != "":
             self.central_widget.filename.setText(Path(self.chosen_filename).name)
-            change_enabled_settings(self.central_widget)
+            helper.change_enabled_settings(self.central_widget)

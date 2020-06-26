@@ -37,7 +37,7 @@
      <x>10</x>
      <y>10</y>
      <width>111</width>
-     <height>161</height>
+     <height>211</height>
     </rect>
    </property>
    <property name="title">
@@ -167,6 +167,68 @@
      <string>Release</string>
     </property>
    </widget>
+   <widget class="QLabel" name="label_11">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>140</y>
+      <width>59</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Velocity</string>
+    </property>
+   </widget>
+   <widget class="QDial" name="velocity_sensitivity">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>150</y>
+      <width>41</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_12">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>140</y>
+      <width>59</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Random</string>
+    </property>
+   </widget>
+   <widget class="QDial" name="envelope_random">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>150</y>
+      <width>41</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="buffer">
    <property name="geometry">
@@ -174,7 +236,7 @@
      <x>130</x>
      <y>10</y>
      <width>131</width>
-     <height>161</height>
+     <height>211</height>
     </rect>
    </property>
    <property name="title">
@@ -214,7 +276,7 @@
      <string>Buffer no.</string>
     </property>
    </widget>
-   <widget class="QDial" name="randomness">
+   <widget class="QDial" name="buffer_random">
     <property name="geometry">
      <rect>
       <x>70</x>
@@ -255,7 +317,7 @@
      <x>270</x>
      <y>10</y>
      <width>181</width>
-     <height>161</height>
+     <height>211</height>
     </rect>
    </property>
    <property name="title">
@@ -350,7 +412,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>190</y>
+     <y>220</y>
      <width>111</width>
      <height>161</height>
     </rect>
@@ -397,8 +459,8 @@
    <property name="geometry">
     <rect>
      <x>130</x>
-     <y>190</y>
-     <width>121</width>
+     <y>220</y>
+     <width>131</width>
      <height>161</height>
     </rect>
    </property>
@@ -413,7 +475,7 @@
      <rect>
       <x>40</x>
       <y>20</y>
-      <width>71</width>
+      <width>81</width>
       <height>32</height>
      </rect>
     </property>
@@ -432,11 +494,55 @@
       <height>31</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
     <property name="text">
      <string>Port:</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_13">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>51</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>MIDI ch:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="ports_2">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>50</y>
+      <width>61</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
     </property>
    </widget>
   </widget>

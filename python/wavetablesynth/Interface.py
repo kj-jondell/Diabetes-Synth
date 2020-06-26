@@ -1,14 +1,17 @@
-import sys 
+import sys, subprocess
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
                                QVBoxLayout, QWidget, QFileDialog,
                                QMainWindow)
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
+from python.controller import Controller
 import sounddevice 
 import csv
 from pathlib import Path
 import python.helper.helper as helper
 
+VERBOSE = False
+BREAK_COMMAND = "startup finished"
 SETTINGS_FILE = str(Path(__file__).parent / "../../settings") #(move settings to shared module)
 UI_FILE_NAME = str(Path(__file__).parent / "ui/wavetable_gui.ui") # Qt Designer ui file TODO fix path!
 WIDGETS_PAIRS = [('buffer_size', 'numframes'), ('sample_rate', 'samplerate'), ('memory_size', 'memsize')]
@@ -22,35 +25,60 @@ class Interface(QMainWindow):
         QMainWindow.__init__(self)
 
         self.settings = helper.read_settings(SETTINGS_FILE)
+        self.sc_process = None
 
         self.load_view()
         if self.settings:
             self.load_output_devices(self.settings['device'])
         self.load_settings()
 
-        #helper.change_enabled_settings(self.central_widget, exceptions = ["load_project"]) # TODO TEMPORARY!!!! must be removed!
+        helper.change_enabled_settings(self.central_widget, exceptions = ["open_controller", "load_project"]) # TODO TEMPORARY!!!! must be removed!
 
         self.central_widget.load_project.clicked.connect(self.choose_project)
         self.central_widget.run_button.clicked.connect(self.start_synth)
+        self.central_widget.open_controller.clicked.connect(self.open_controller)
+
+        QApplication.instance().aboutToQuit.connect(self.cleanup)
 
         self.setWindowTitle("Wavetable Synthesizer")
         self.setCentralWidget(self.central_widget)
 
         self.show()
 
+    def cleanup(self):
+        if self.sc_process != None:
+            self.sc_process.kill()
+
+    def open_controller(self):
+        self.controller_window = Controller.Controller()
+
     def start_synth(self):
         ### Chosen settings from user input
+        #if self.sc_process == None:
         for name, value in WIDGETS_PAIRS + WIDGET_LOAD_SEPARATELY:
             widget = getattr(self.central_widget, name)
             self.settings[value] = widget.currentText()
         helper.write_settings(self.settings, SETTINGS_FILE)
+
+        if self.sc_process == None:
+            self.sc_process = subprocess.Popen(['/bin/bash', '-i', '-c', 'sclang supercollider/wavetable.scd'], stdout=subprocess.PIPE)
+            while True:
+                output = self.sc_process.stdout.readline().decode("utf-8").strip()
+                if VERBOSE:
+                    print(output)
+                if output == BREAK_COMMAND:
+                    break
+        self.controller_window = Controller.Controller()
+
+        self.central_widget.run_button.setText("Restart synth")
+        self.central_widget.open_controller.setEnabled(True)
 
     def choose_project(self):
         self.chosen_project, filter_type = QFileDialog.getOpenFileName(self.central_widget, 'Open file', filter = "DIA project (*.dia)")
 
         if self.chosen_project:
             self.central_widget.project_name.setText(Path(self.chosen_project).stem)
-            helper.change_enabled_settings(self.central_widget, exceptions = ["load_project"])
+            helper.change_enabled_settings(self.central_widget, exceptions = ["load_project", "open_controller"])
 
             imported_settings = helper.read_settings(self.chosen_project)
             self.settings = {**self.settings, **imported_settings} # merge setting dictionaries

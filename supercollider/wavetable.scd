@@ -2,16 +2,18 @@
 * TODO: - Write better comments
 *       - Make variable urls
 *       - Revise camelCase / snake_case
+*       - Handshake with Python
 *       - 512 sample long waveforms are laggy...
 * © Karl Johannes Jondell
 */
 
 // -------------------- PARSE SETTINGS FILE -------------------- //
 var settings = Dictionary.new;
-var settings_file = CSVFileReader.read("../settings"); // TODO path of file from thisProcess.argv instead (from python)
+var settings_file = CSVFileReader.read("settings"); // TODO path of file from thisProcess.argv instead (from python)
 var osc_port = 1121; //TODO read from settings file (or argument when started)!
 var osc_send = NetAddr.new("127.0.0.1", 1122);
 var keys = nil!128;
+var breakCommand = "startup finished";
 var device, memsize, order, numframes, filename, samplerate, ports, outbus = 0, midichannel = 5; //settings variable declaration
 var setDialParameter;
 var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8; //Default values
@@ -83,10 +85,13 @@ setDialParameter = {
 };
 
 // -------------------- PREPARATIONS -------------------- //
-
 thisProcess.openUDPPort(osc_port);
 
-Server.default.options.device = device;
+if(device == "Built-in Output"){
+    Server.default.options.outDevice = device;
+} {
+    Server.default.options.device = device;
+};
 Server.default.options.memSize = memsize;
 Server.default.options.sampleRate = samplerate;
 Server.default.options.numOutputBusChannels = ports[1].asInteger;
@@ -98,6 +103,8 @@ Server.default.waitForBoot(
     {
         var buffers = Array.new(order.size);
         var envelop;
+
+        breakCommand.postln;
 
         order.mirror.do({ // TODO mirror? setting?
             arg index, count;
