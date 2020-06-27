@@ -16,11 +16,11 @@ var keys = nil!128;
 var breakCommand = "startup finished";
 var device, memsize, order, numframes, filename, samplerate, ports, mididevice = "IAC Driver Bus 1", outbus = 0, midichannel = 5; //settings variable declaration
 var setDialParameter, getMidiDevice, readAndEvaluateSettings, bootFunction;
-var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8; //Default values
+var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8, flutter = 0.0002, tuning = Tuning.et(29); //Default values
 
-var dialList = ('/attack' : \attackTime, '/decay' : \decayTime, '/sustain' : \sustainLevel, '/detune_factor' : \detuneFactor, '/buffer_no' : \bufferNum, '/release' : \releaseTime); //Mapping OSC names to SynthDef arguments
+var dialList = ('/attack' : \attackTime, '/decay' : \decayTime, '/sustain' : \sustainLevel, '/detune_factor' : \detuneFactor, '/buffer_no' : \bufferNum, '/flutter' : \flutter, '/release' : \releaseTime); //Mapping OSC names to SynthDef arguments
 
-var midiMatrix = (18 : '/attack', 20 : '/decay', 19 : '/sustain', 16 : '/detune_factor', 17 : '/release'); // connecting midi cc num to osc name
+var midiMatrix = (21 : '/flutter', 17 : '/attack', 20 : '/decay', 19 : '/sustain', 16 : '/detune_factor', 18 : '/release'); // connecting midi cc num to osc name
 
 if(thisProcess.openUDPPort(osc_port) == false){
     0.exit;
@@ -63,7 +63,7 @@ readAndEvaluateSettings = {
 
     Server.default.options.memSize = memsize;
     Server.default.options.sampleRate = samplerate;
-    Server.default.options.numOutputBusChannels = ports[1].asInteger;
+    Server.default.options.numOutputBusChannels = ports[1].asInteger; //TODO setting for amt outputs
 
     MIDIIn.disconnectAll();
     MIDIIn.connect(0, getMidiDevice.value(mididevice));
@@ -79,19 +79,23 @@ setDialParameter = {
     switch(
         parameter,
         '/attack', {
-            attackTime = vel.linlin(0.0,127.0,0.001,2.5);
+            attackTime = vel.linlin(0.0, 127.0, 0.001, 2.5);
             value = attackTime;
         },
         '/decay', {
-            decayTime = vel.linlin(0.0,127.0, 0.1, 1.5);
+            decayTime = vel.linlin(0.0, 127.0, 0.1, 1.5);
             value = decayTime; 
         },
         '/sustain', {
-            sustainLevel = vel.linlin(0.0,127.0, 0.2, 1);
+            sustainLevel = vel.linlin(0.0, 127.0, 0.2, 1);
             value = sustainLevel; 
         },
+        '/flutter', {
+            flutter = vel.linlin(0.0, 127.0, 0.0001, 0.001);
+            value = flutter; 
+        },
         '/detune_factor', {
-            detune = (vel.linlin(0.0,127.0,0,1.5)).snap(0.1,0.001,0.1);
+            detune = (vel.linlin(0.0, 127.0, 0, 1.5)).snap(0.1, 0.001, 0.1);
             value = detune; 
         },
         '/buffer_no', {
@@ -99,7 +103,7 @@ setDialParameter = {
             value = bufferNum; 
         },
         '/release', {
-            releaseTime = vel.linlin(0.0,127.0, 1,5);
+            releaseTime = vel.linlin(0.0, 127.0, 1, 5);
             value = releaseTime; 
         }
     );
@@ -162,8 +166,8 @@ bootFunction = {
     SynthDef.new(
         \DiabetesPanEnvelop,
         {
-            arg freq = 440, velocity = 67, attackTime = 0.01, releaseTime = 0.1, decayTime = 0.8, pan = 0, sustainLevel = 0.6, detuneFactor = 1.0, bufferNum = 1, outBus = 0, gate = 1;
-            var freq_ = freq*BrownianWalk.kr(0.0002);
+            arg freq = 440, velocity = 67, attackTime = 0.01, releaseTime = 0.1, decayTime = 0.8, pan = 0, sustainLevel = 0.6, detuneFactor = 1.0, bufferNum = 1, outBus = 0, gate = 1, flutter = 0.0002;
+            var freq_ = freq*BrownianWalk.kr(flutter);
             var sig = VOsc3.ar(bufferNum+LFTri.kr(0.04).unipolar(mul:velocity.linlin(0,127,1,15)), freq1:freq_, freq2:freq_*(1.0-(detuneFactor)), freq3:freq_*(1.0+(detuneFactor)), mul: Lag2.kr(velocity.linlin(0,127,-15,-6).dbamp));
             var filter = BLowPass4.ar(sig, (freq*Lag2.kr(velocity.linlin(0,127,1.0,5.0))).clip(1,20000), Lag2.kr(velocity.linlin(0,127,1.0,2.0)));//TODO FIX blowpasss cutoff frequency!!
             var env = filter*EnvGen.ar(Env.adsr(attackTime: attackTime, decayTime: decayTime, sustainLevel: sustainLevel, releaseTime: releaseTime, curve: -4.0), gate: gate, doneAction: Done.freeSelf);
@@ -188,9 +192,10 @@ bootFunction = {
     MIDIdef.noteOn(\diabetesOn, 
         {
             arg vel,num;
+            var freq = Scale.chromatic(tuning).degreeToFreq(num, 30.midicps, 0);//TODO make variable
             if(keys[num].isNil,
             {
-                keys[num] = Synth.new(\DiabetesPanEnvelop, [\outBus, outbus, \releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \bufferNum, bufferNum, \velocity, vel, \freq, num.midicps, \pan, rrand(-0.25,0.25)]);
+                keys[num] = Synth.new(\DiabetesPanEnvelop, [\flutter, flutter, \outBus, outbus, \releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \bufferNum, bufferNum, \velocity, vel, \freq, freq, \pan, rrand(-0.25,0.25)]);
             });
         }, chan: midichannel
     );

@@ -1,7 +1,7 @@
 import sys, subprocess, rtmidi
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
                                QVBoxLayout, QWidget, QFileDialog,
-                               QMainWindow)
+                               QMainWindow, QMenu, QMenuBar)
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
 from python.controller import Controller
