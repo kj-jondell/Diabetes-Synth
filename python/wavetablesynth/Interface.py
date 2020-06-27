@@ -37,7 +37,7 @@ class Interface(QMainWindow):
             self.load_midi_devices(self.settings['mididevice'])
         self.load_settings()
 
-        helper.change_enabled_settings(self.central_widget, exceptions = ["open_controller", "load_project"]) # TODO TEMPORARY!!!! must be removed!
+        # helper.change_enabled_settings(self.central_widget, exceptions = ["open_controller", "load_project"]) # TODO TEMPORARY!!!! must be removed!
 
         self.central_widget.load_project.clicked.connect(self.choose_project)
         self.central_widget.run_button.clicked.connect(self.start_synth)
@@ -57,8 +57,21 @@ class Interface(QMainWindow):
     def parse_arguments(self, args = None):
         self.verbose = any(item in args[1:] for item in VERBOSITY_SETTING)
 
+    def wait_for_boot(self):
+        hung_counter = 0
+        while True:
+            output = self.sc_process.stdout.readline().decode("utf-8").strip()
+            if self.verbose and output: 
+                print(output)
+            hung_counter = 0 if output else (hung_counter+1)
+            if output == BREAK_COMMAND or hung_counter == 20:# break if hung
+                break
+
     def open_controller(self):
-        self.controller_window = Controller.Controller()
+        if self.controller_window == None:
+            self.controller_window = Controller.Controller()
+        elif not self.controller_window.isVisible():
+            self.controller_window.setVisible(True)
 
     ### Chosen settings from user input
     def start_synth(self):
@@ -69,19 +82,14 @@ class Interface(QMainWindow):
 
         if self.sc_process == None:
             self.sc_process = subprocess.Popen(['/bin/bash', '-i', '-c', 'sclang supercollider/wavetable.scd'], stdout=subprocess.PIPE)
-            while True:
-                output = self.sc_process.stdout.readline().decode("utf-8").strip()
-                if self.verbose:
-                    print(output)
-                if output == BREAK_COMMAND:
-                    break
+            self.wait_for_boot()
+
             self.central_widget.run_button.setText("Restart synth")
             self.central_widget.open_controller.setEnabled(True)
         elif self.controller_window != None:
             self.controller_window.send_trigger("/reboot")
-
-        if self.controller_window == None or not self.controller_window.isVisible():
-            self.controller_window = Controller.Controller()
+            self.wait_for_boot()
+        self.open_controller()
 
     def choose_project(self):
         self.chosen_project, filter_type = QFileDialog.getOpenFileName(self.central_widget, 'Open file', filter = "DIA project (*.dia)")

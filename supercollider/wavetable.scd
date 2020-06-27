@@ -15,18 +15,22 @@ var osc_send = NetAddr.new("127.0.0.1", 1122);
 var keys = nil!128;
 var breakCommand = "startup finished";
 var device, memsize, order, numframes, filename, samplerate, ports, mididevice = "IAC Driver Bus 1", outbus = 0, midichannel = 5; //settings variable declaration
-var setDialParameter, getMidiDevice, readAndEvaluateSettings;
+var setDialParameter, getMidiDevice, readAndEvaluateSettings, bootFunction;
 var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8; //Default values
 
 var dialList = ('/attack' : \attackTime, '/decay' : \decayTime, '/sustain' : \sustainLevel, '/detune_factor' : \detuneFactor, '/buffer_no' : \bufferNum, '/release' : \releaseTime); //Mapping OSC names to SynthDef arguments
 
 var midiMatrix = (18 : '/attack', 20 : '/decay', 19 : '/sustain', 16 : '/detune_factor', 17 : '/release'); // connecting midi cc num to osc name
 
-thisProcess.openUDPPort(osc_port).postln;
+if(thisProcess.openUDPPort(osc_port) == false){
+    0.exit;
+};
+
 MIDIClient.init;
 
 readAndEvaluateSettings = {
     settings = Dictionary.new;
+    settings_file = CSVFileReader.read("settings");
 
     if(settings_file.size == 0){ // exit program if settings file not found TODO defaults
         0.exit;
@@ -123,63 +127,63 @@ thisProcess.addOSCRecvFunc(
         arg msg, time, addr;
         if(dialList.keys.includes(msg[0])){
             setDialParameter.value(msg[1], msg[0]);
-            msg[0].postln;
         }{
             if(msg[0] == '/reboot'){
-                "reboot".postln;
+                MIDIdef.freeAll;
+                Server.default.freeAll;
+                
+                Server.default.quit({
+                    readAndEvaluateSettings.value();
+                    Server.default.waitForBoot(bootFunction);
+                });
             }
         }
     };
 );
 
-readAndEvaluateSettings.value();
+bootFunction = {
+    var buffers = Array.new(order.size);
+    var envelop;
 
-// -------------------- PREPARATIONS -------------------- //
-Server.default.waitForBoot(
-    {
-        var buffers = Array.new(order.size);
-        var envelop;
+    breakCommand.postln;
 
-        breakCommand.postln;
+    order.mirror.do({ // TODO mirror? setting?
+        arg index, count;
+        var url = format(filename, index); //put samples somewhere else... 
+        buffers.add(Buffer.read(Server.default, path: url, numFrames: numframes)); 
+    });
 
-        order.mirror.do({ // TODO mirror? setting?
-            arg index, count;
-            var url = format(filename, index); //put samples somewhere else... 
-            buffers.add(Buffer.read(Server.default, path: url, numFrames: numframes)); 
-        });
+    Server.default.freeAll;
 
-        Server.default.freeAll;
-
-        //Envelop...
-        //BUF OSC AS CONTROLBUS...
-        //TODO fix names
-        //TODO bufferum... (wrapping/offset)..
-        SynthDef.new(
-            \DiabetesPanEnvelop,
-            {
-                arg freq = 440, velocity = 67, attackTime = 0.01, releaseTime = 0.1, decayTime = 0.8, pan = 0, sustainLevel = 0.6, detuneFactor = 1.0, bufferNum = 1, outBus = 0, gate = 1;
-                var freq_ = freq*BrownianWalk.kr(0.0002);
-                var sig = VOsc3.ar(bufferNum+LFTri.kr(0.04).unipolar(mul:velocity.linlin(0,127,1,15)), freq1:freq_, freq2:freq_*(1.0-(detuneFactor)), freq3:freq_*(1.0+(detuneFactor)), mul: Lag2.kr(velocity.linlin(0,127,-15,-6).dbamp));
-                var filter = BLowPass4.ar(sig, (freq*Lag2.kr(velocity.linlin(0,127,1.0,5.0))).clip(1,20000), Lag2.kr(velocity.linlin(0,127,1.0,2.0)));//TODO FIX blowpasss cutoff frequency!!
-                var env = filter*EnvGen.ar(Env.adsr(attackTime: attackTime, decayTime: decayTime, sustainLevel: sustainLevel, releaseTime: releaseTime, curve: -4.0), gate: gate, doneAction: Done.freeSelf);
-                var panned = Pan2.ar(env, pan);
-                Out.ar(outBus, LeakDC.ar(panned));
-            }
-        ).add;
-
-        Server.default.sync;
-
-        MIDIdef.noteOff(\diabetesOff,
-            {
-                arg vel,num;
-                if(keys[num].notNil,
-                {
-                    keys[num].release;
-                    keys[num] = nil;
-                }
-            );
-        }, chan: midichannel 
+    //Envelop...
+    //BUF OSC AS CONTROLBUS...
+    //TODO fix names
+    //TODO bufferum... (wrapping/offset)..
+    SynthDef.new(
+        \DiabetesPanEnvelop,
+        {
+            arg freq = 440, velocity = 67, attackTime = 0.01, releaseTime = 0.1, decayTime = 0.8, pan = 0, sustainLevel = 0.6, detuneFactor = 1.0, bufferNum = 1, outBus = 0, gate = 1;
+            var freq_ = freq*BrownianWalk.kr(0.0002);
+            var sig = VOsc3.ar(bufferNum+LFTri.kr(0.04).unipolar(mul:velocity.linlin(0,127,1,15)), freq1:freq_, freq2:freq_*(1.0-(detuneFactor)), freq3:freq_*(1.0+(detuneFactor)), mul: Lag2.kr(velocity.linlin(0,127,-15,-6).dbamp));
+            var filter = BLowPass4.ar(sig, (freq*Lag2.kr(velocity.linlin(0,127,1.0,5.0))).clip(1,20000), Lag2.kr(velocity.linlin(0,127,1.0,2.0)));//TODO FIX blowpasss cutoff frequency!!
+            var env = filter*EnvGen.ar(Env.adsr(attackTime: attackTime, decayTime: decayTime, sustainLevel: sustainLevel, releaseTime: releaseTime, curve: -4.0), gate: gate, doneAction: Done.freeSelf);
+            var panned = Pan2.ar(env, pan);
+            Out.ar(outBus, LeakDC.ar(panned));
+        }
     ).add;
+
+    Server.default.sync;
+
+    MIDIdef.noteOff(\diabetesOff,
+        {
+            arg vel,num;
+            if(keys[num].notNil,
+            {
+                keys[num].release;
+                keys[num] = nil;
+            });
+        }, chan: midichannel
+    );
 
     MIDIdef.noteOn(\diabetesOn, 
         {
@@ -189,7 +193,7 @@ Server.default.waitForBoot(
                 keys[num] = Synth.new(\DiabetesPanEnvelop, [\outBus, outbus, \releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \bufferNum, bufferNum, \velocity, vel, \freq, num.midicps, \pan, rrand(-0.25,0.25)]);
             });
         }, chan: midichannel
-    ).add;
+    );
 
     MIDIdef.cc(\cc,
         {
@@ -200,6 +204,9 @@ Server.default.waitForBoot(
                 osc_send.sendMsg(oscSymbol, vel);
             };
         }
-    ).add;
+    );
 
-});
+};
+
+readAndEvaluateSettings.value();
+Server.default.waitForBoot(bootFunction);
