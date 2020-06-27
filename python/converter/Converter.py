@@ -9,7 +9,7 @@ import python.helper.helper as helper
 
 class Converter():
 
-    def __init__(self):
+    def __init__(self, args = None):
         self.view = View(self)
         self.view.central_widget.run_button.clicked.connect(self.convert_files)
 

@@ -1,4 +1,4 @@
-import sys, subprocess
+import sys, subprocess, rtmidi
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
                                QVBoxLayout, QWidget, QFileDialog,
                                QMainWindow)
@@ -10,26 +10,31 @@ import csv
 from pathlib import Path
 import python.helper.helper as helper
 
-VERBOSE = False
+VERBOSITY_SETTING =  ['-v', '--verbose']
+
 BREAK_COMMAND = "startup finished"
 SETTINGS_FILE = str(Path(__file__).parent / "../../settings") #(move settings to shared module)
 UI_FILE_NAME = str(Path(__file__).parent / "ui/wavetable_gui.ui") # Qt Designer ui file TODO fix path!
 WIDGETS_PAIRS = [('buffer_size', 'numframes'), ('sample_rate', 'samplerate'), ('memory_size', 'memsize')]
-WIDGET_LOAD_SEPARATELY = [('output_devices', 'device'), ('ports', 'port')]
+WIDGET_LOAD_SEPARATELY = [('output_devices', 'device'), ('midi_devices', 'mididevice'), ('ports', 'port'), ('channels', 'midichannel')]
 
 AMT_CHANNELS = 2 #TODO variable...
 
 class Interface(QMainWindow):
 
-    def __init__(self, parent = None):
+    def __init__(self, args = None):
         QMainWindow.__init__(self)
+
+        self.parse_arguments(args)
 
         self.settings = helper.read_settings(SETTINGS_FILE)
         self.sc_process = None
+        self.controller_window = None
 
         self.load_view()
         if self.settings:
             self.load_output_devices(self.settings['device'])
+            self.load_midi_devices(self.settings['mididevice'])
         self.load_settings()
 
         helper.change_enabled_settings(self.central_widget, exceptions = ["open_controller", "load_project"]) # TODO TEMPORARY!!!! must be removed!
@@ -49,12 +54,14 @@ class Interface(QMainWindow):
         if self.sc_process != None:
             self.sc_process.kill()
 
+    def parse_arguments(self, args = None):
+        self.verbose = any(item in args[1:] for item in VERBOSITY_SETTING)
+
     def open_controller(self):
         self.controller_window = Controller.Controller()
 
+    ### Chosen settings from user input
     def start_synth(self):
-        ### Chosen settings from user input
-        #if self.sc_process == None:
         for name, value in WIDGETS_PAIRS + WIDGET_LOAD_SEPARATELY:
             widget = getattr(self.central_widget, name)
             self.settings[value] = widget.currentText()
@@ -64,14 +71,17 @@ class Interface(QMainWindow):
             self.sc_process = subprocess.Popen(['/bin/bash', '-i', '-c', 'sclang supercollider/wavetable.scd'], stdout=subprocess.PIPE)
             while True:
                 output = self.sc_process.stdout.readline().decode("utf-8").strip()
-                if VERBOSE:
+                if self.verbose:
                     print(output)
                 if output == BREAK_COMMAND:
                     break
-        self.controller_window = Controller.Controller()
+            self.central_widget.run_button.setText("Restart synth")
+            self.central_widget.open_controller.setEnabled(True)
+        elif self.controller_window != None:
+            self.controller_window.send_trigger("/reboot")
 
-        self.central_widget.run_button.setText("Restart synth")
-        self.central_widget.open_controller.setEnabled(True)
+        if self.controller_window == None or not self.controller_window.isVisible():
+            self.controller_window = Controller.Controller()
 
     def choose_project(self):
         self.chosen_project, filter_type = QFileDialog.getOpenFileName(self.central_widget, 'Open file', filter = "DIA project (*.dia)")
@@ -98,6 +108,11 @@ class Interface(QMainWindow):
             print(self.loader.errorString())
             sys.exit(-1)
 
+    def load_midi_ports(self, amt_channels = 16):
+        channels = self.central_widget.channels
+        for channel in range(1,amt_channels+1):
+            channels.addItem("{}".format(channel))
+
     def load_ports(self, current_text):
         ports = self.central_widget.ports
         ports.clear()
@@ -107,6 +122,16 @@ class Interface(QMainWindow):
                 amt_outputs = device['max_output_channels']
         for port in range(1, amt_outputs, AMT_CHANNELS): # 2 because stereo (works best with ableton)?) TODO implement multichannel!
             ports.addItem("{}-{}". format(port, port+(AMT_CHANNELS-1)))
+
+    def load_midi_devices(self, default_device):
+        midi_devices = self.central_widget.midi_devices
+        midiout = rtmidi.MidiIn()
+
+        for device in midiout.get_ports():
+            midi_devices.addItem(device)
+            if device == default_device:
+                midi_devices.setCurrentIndex(midi_devices.count()-1) # device index
+                self.load_midi_ports()
 
     def load_output_devices(self, default_device):
         output_devices = self.central_widget.output_devices

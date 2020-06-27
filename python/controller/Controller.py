@@ -1,6 +1,6 @@
 import sys 
 from PySide2.QtWidgets import QMainWindow, QDial, QApplication
-from PySide2.QtCore import Slot, Qt, QFile, QThread, QIODevice
+from PySide2.QtCore import Slot, Qt, QFile, QThread, QIODevice, QByteArray
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtNetwork import QUdpSocket, QHostAddress
 from pythonosc import udp_client
@@ -9,12 +9,12 @@ from pathlib import Path
 import asyncio
 
 UI_FILE_NAME = str(Path(__file__).parent / "ui/synth-controller.ui") # Qt Designer ui file TODO fix path!
-OSC_SEND_SETTINGS = ("127.0.0.1", 1121)
+OSC_SEND_SETTINGS = ("127.0.0.1", 57120)
 OSC_RECEIVE_PORT = 1122
 
 class Controller(QMainWindow):
 
-    def __init__(self, parent = None):
+    def __init__(self, args = None):
         QMainWindow.__init__(self)
 
         self.load_view()
@@ -29,6 +29,10 @@ class Controller(QMainWindow):
 
         self.show()
 
+    def send_trigger(self, message):
+        self.client.send_message(message, "true")
+        #self.sendSocket.writeDatagram(QByteArray(bytes(message, "utf-8")))
+
     def dial_change(self, value):
         self.client.send_message("/{}".format(self.sender().objectName()), int(value))
 
@@ -36,6 +40,9 @@ class Controller(QMainWindow):
         self.udpSocket = QUdpSocket(self)
         self.udpSocket.bind(OSC_RECEIVE_PORT)
         self.udpSocket.readyRead.connect(self.parse_udp)
+
+        #self.sendSocket = QUdpSocket(self)
+        #self.sendSocket.bind(1121)
 
     def parse_udp(self):
         while self.udpSocket.hasPendingDatagrams():

@@ -14,34 +14,57 @@ var osc_port = 1121; //TODO read from settings file (or argument when started)!
 var osc_send = NetAddr.new("127.0.0.1", 1122);
 var keys = nil!128;
 var breakCommand = "startup finished";
-var device, memsize, order, numframes, filename, samplerate, ports, outbus = 0, midichannel = 5; //settings variable declaration
-var setDialParameter;
+var device, memsize, order, numframes, filename, samplerate, ports, mididevice = "IAC Driver Bus 1", outbus = 0, midichannel = 5; //settings variable declaration
+var setDialParameter, getMidiDevice, readAndEvaluateSettings;
 var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8; //Default values
 
 var dialList = ('/attack' : \attackTime, '/decay' : \decayTime, '/sustain' : \sustainLevel, '/detune_factor' : \detuneFactor, '/buffer_no' : \bufferNum, '/release' : \releaseTime); //Mapping OSC names to SynthDef arguments
 
 var midiMatrix = (18 : '/attack', 20 : '/decay', 19 : '/sustain', 16 : '/detune_factor', 17 : '/release'); // connecting midi cc num to osc name
 
-if(settings_file.size == 0){ // exit program if settings file not found TODO defaults
-    0.exit;
+thisProcess.openUDPPort(osc_port).postln;
+MIDIClient.init;
+
+readAndEvaluateSettings = {
+    settings = Dictionary.new;
+
+    if(settings_file.size == 0){ // exit program if settings file not found TODO defaults
+        0.exit;
+    };
+
+    settings_file.do({
+        arg value; 
+        settings.put(value[0], value[1])
+    });
+
+    // TODO remove [1..] (or..? readability of settings file..)
+    device = settings["device"][1..];
+    mididevice = settings["mididevice"][1..];
+    midichannel = settings["midichannel"][1..].asInteger-1;
+    memsize = settings["memsize"][1..].asInteger;
+    order = settings["order"][1..].split($ ).asInteger;
+    numframes = settings["numframes"][1..].asInteger;
+    filename = settings["filename"][1..];
+    samplerate = settings["samplerate"][1..];
+    ports = settings["port"][1..].split($-);
+    outbus = ports[0].asInteger-1;
+
+    // TODO Raise better error when using corrupt settings file!
+
+    if(device == "Built-in Output"){
+        Server.default.options.outDevice = device;
+    } {
+        Server.default.options.device = device;
+    };
+
+    Server.default.options.memSize = memsize;
+    Server.default.options.sampleRate = samplerate;
+    Server.default.options.numOutputBusChannels = ports[1].asInteger;
+
+    MIDIIn.disconnectAll();
+    MIDIIn.connect(0, getMidiDevice.value(mididevice));
+
 };
-
-settings_file.do({
-    arg value; 
-    settings.put(value[0], value[1])
-});
-
-// TODO remove [1..] (or..? readability of settings file..)
-device = settings["device"][1..];
-memsize = settings["memsize"][1..].asInteger;
-order = settings["order"][1..].split($ ).asInteger;
-numframes = settings["numframes"][1..].asInteger;
-filename = settings["filename"][1..];
-samplerate = settings["samplerate"][1..];
-ports = settings["port"][1..].split($-);
-outbus = ports[0].asInteger-1;
-
-// TODO Raise better error when using corrupt settings file!
 
 // -------------------- SCALING FUNCTIONS -------------------- //
 
@@ -84,21 +107,34 @@ setDialParameter = {
 
 };
 
-// -------------------- PREPARATIONS -------------------- //
-thisProcess.openUDPPort(osc_port);
-
-if(device == "Built-in Output"){
-    Server.default.options.outDevice = device;
-} {
-    Server.default.options.device = device;
+getMidiDevice = {
+    arg chosenDevice;
+    var returnVal;
+    MIDIClient.sources.do({
+        arg src;
+        if((src.device+src.name).contains(chosenDevice)){returnVal = src;}
+    });
+    returnVal;
 };
-Server.default.options.memSize = memsize;
-Server.default.options.sampleRate = samplerate;
-Server.default.options.numOutputBusChannels = ports[1].asInteger;
 
-MIDIClient.init;
-MIDIIn.connectAll; //Choose mididevice... TODO
+// Function accepting osc input from python-controller!
+thisProcess.addOSCRecvFunc(
+    { 
+        arg msg, time, addr;
+        if(dialList.keys.includes(msg[0])){
+            setDialParameter.value(msg[1], msg[0]);
+            msg[0].postln;
+        }{
+            if(msg[0] == '/reboot'){
+                "reboot".postln;
+            }
+        }
+    };
+);
 
+readAndEvaluateSettings.value();
+
+// -------------------- PREPARATIONS -------------------- //
 Server.default.waitForBoot(
     {
         var buffers = Array.new(order.size);
@@ -109,10 +145,10 @@ Server.default.waitForBoot(
         order.mirror.do({ // TODO mirror? setting?
             arg index, count;
             var url = format(filename, index); //put samples somewhere else... 
-            buffers.add(Buffer.read(s, path: url, numFrames: numframes)); 
+            buffers.add(Buffer.read(Server.default, path: url, numFrames: numframes)); 
         });
 
-        s.freeAll;
+        Server.default.freeAll;
 
         //Envelop...
         //BUF OSC AS CONTROLBUS...
@@ -131,7 +167,7 @@ Server.default.waitForBoot(
             }
         ).add;
 
-        s.sync;
+        Server.default.sync;
 
         MIDIdef.noteOff(\diabetesOff,
             {
@@ -165,15 +201,5 @@ Server.default.waitForBoot(
             };
         }
     ).add;
-
-    // Function accepting osc input from python-controller!
-    thisProcess.addOSCRecvFunc(
-        { 
-            arg msg, time, addr;
-            if(dialList.keys.includes(msg[0])){
-                setDialParameter.value(msg[1], msg[0]);
-            }
-        };
-    );
 
 });
