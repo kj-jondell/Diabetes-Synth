@@ -16,7 +16,7 @@ var keys = nil!128;
 var breakCommand = "startup finished";
 var device, memsize, order, numframes, filename, samplerate, ports, mididevice = "IAC Driver Bus 1", outbus = 0, midichannel = 5; //settings variable declaration
 var setDialParameter, getMidiDevice, readAndEvaluateSettings, bootFunction;
-var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8, flutter = 0.0002, tuning = Tuning.et(29); //Default values
+var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8, flutter = 0.0002, tuning = Tuning.et(12); //Default values
 
 var dialList = ('/attack' : \attackTime, '/decay' : \decayTime, '/sustain' : \sustainLevel, '/detune_factor' : \detuneFactor, '/buffer_no' : \bufferNum, '/flutter' : \flutter, '/release' : \releaseTime); //Mapping OSC names to SynthDef arguments
 
@@ -132,15 +132,25 @@ thisProcess.addOSCRecvFunc(
         if(dialList.keys.includes(msg[0])){
             setDialParameter.value(msg[1], msg[0]);
         }{
-            if(msg[0] == '/reboot'){
-                MIDIdef.freeAll;
-                Server.default.freeAll;
-                
-                Server.default.quit({
-                    readAndEvaluateSettings.value();
-                    Server.default.waitForBoot(bootFunction);
-                });
-            }
+            switch(
+                msg[0],
+                '/reboot', {
+                    MIDIdef.freeAll;
+                    Server.default.freeAll;
+
+                    Server.default.quit({
+                        readAndEvaluateSettings.value();
+                        Server.default.waitForBoot(bootFunction);
+                    });
+                }, 
+                '/tuning', {
+                    switch(
+                        msg[1],
+                        'just', {tuning = Tuning.just;},
+                        'equal', {tuning = Tuning.et(msg[2]);}
+                    );
+                }
+            );
         }
     };
 );
@@ -192,7 +202,7 @@ bootFunction = {
     MIDIdef.noteOn(\diabetesOn, 
         {
             arg vel,num;
-            var freq = Scale.chromatic(tuning).degreeToFreq(num, 30.midicps, 0);//TODO make variable
+            var freq = Scale.chromatic(tuning).degreeToFreq(num, 12.midicps, 0);//TODO make variable
             if(keys[num].isNil,
             {
                 keys[num] = Synth.new(\DiabetesPanEnvelop, [\flutter, flutter, \outBus, outbus, \releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \bufferNum, bufferNum, \velocity, vel, \freq, freq, \pan, rrand(-0.25,0.25)]);

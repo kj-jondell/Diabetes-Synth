@@ -22,6 +22,7 @@ class Controller(QMainWindow):
         self.load_server()
         
         self.central_widget.tuning.currentTextChanged.connect(self.tuning_change)
+        self.central_widget.equal_temperament.valueChanged.connect(self.tet_change)
         for dial in self.central_widget.findChildren(QDial):
                 dial.valueChanged.connect(self.dial_change)
 
@@ -32,6 +33,10 @@ class Controller(QMainWindow):
 
     def tuning_change(self, value):
         self.central_widget.equal_temperament.setEnabled(value == "Equal temperament")
+        self.client.send_message("/tuning", [value.split()[0].lower(), self.central_widget.equal_temperament.value()])
+
+    def tet_change(self, value):
+        self.client.send_message("/tuning", ["equal", value])
 
     def send_trigger(self, message):
         self.client.send_message(message, "true")
