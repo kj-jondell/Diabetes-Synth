@@ -379,12 +379,27 @@
     </property>
     <item>
      <property name="text">
-      <string>Just intonation</string>
+      <string>Just Intonation</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Equal temperament</string>
+      <string>Equal Temperament</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Harmonic Series 24</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Bohlen-Pierce</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Meantone, 1/5 Pythagorean Comma</string>
      </property>
     </item>
    </widget>
@@ -477,6 +492,86 @@
      <number>12</number>
     </property>
    </widget>
+   <widget class="QLabel" name="label_18">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>130</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Root freq</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="root_freq">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>150</y>
+      <width>42</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>220</number>
+    </property>
+    <property name="maximum">
+     <number>660</number>
+    </property>
+    <property name="value">
+     <number>220</number>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="octave">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>150</y>
+      <width>42</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>-3</number>
+    </property>
+    <property name="maximum">
+     <number>3</number>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_19">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>130</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Octave</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="spatiality">
    <property name="geometry">
@@ -542,7 +637,7 @@
    </property>
    <widget class="QComboBox" name="ports">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
@@ -600,9 +695,9 @@
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QComboBox" name="ports_2">
+   <widget class="QComboBox" name="channels">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>

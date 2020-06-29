@@ -6,7 +6,8 @@ from PySide2.QtNetwork import QUdpSocket, QHostAddress
 from pythonosc import udp_client
 from pythonosc.parsing import osc_types
 from pathlib import Path
-import asyncio
+import python.helper.helper as helper
+import sounddevice 
 
 UI_FILE_NAME = str(Path(__file__).parent / "ui/synth-controller.ui") # Qt Designer ui file TODO fix path!
 OSC_SEND_SETTINGS = ("127.0.0.1", 1121)
@@ -20,9 +21,15 @@ class Controller(QMainWindow):
         self.load_view()
         self.load_client()
         self.load_server()
+
+        device = "Soundflower (64ch)" #load_audio_device from csv
+        helper.load_output_devices(device, self.central_widget.ports)
+        #load_current_midi_port from csv
+        helper.load_midi_ports(self.central_widget.channels)
         
         self.central_widget.tuning.currentTextChanged.connect(self.tuning_change)
-        self.central_widget.equal_temperament.valueChanged.connect(self.tet_change)
+        self.central_widget.equal_temperament.valueChanged.connect(self.equal_temperament_change)
+
         for dial in self.central_widget.findChildren(QDial):
                 dial.valueChanged.connect(self.dial_change)
 
@@ -32,10 +39,10 @@ class Controller(QMainWindow):
         self.show()
 
     def tuning_change(self, value):
-        self.central_widget.equal_temperament.setEnabled(value == "Equal temperament")
-        self.client.send_message("/tuning", [value.split()[0].lower(), self.central_widget.equal_temperament.value()])
+        self.central_widget.equal_temperament.setEnabled(value == "Equal Temperament")
+        self.client.send_message("/tuning", [value.split()[0].lower().strip(','), self.central_widget.equal_temperament.value()])
 
-    def tet_change(self, value):
+    def equal_temperament_change(self, value):
         self.client.send_message("/tuning", ["equal", value])
 
     def send_trigger(self, message):

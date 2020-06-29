@@ -16,11 +16,13 @@ var keys = nil!128;
 var breakCommand = "startup finished";
 var device, memsize, order, numframes, filename, samplerate, ports, mididevice = "IAC Driver Bus 1", outbus = 0, midichannel = 5; //settings variable declaration
 var setDialParameter, getMidiDevice, readAndEvaluateSettings, bootFunction;
-var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8, flutter = 0.0002, tuning = Tuning.et(12); //Default values
+var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8, flutter = 0.0002, tuning = Tuning.just; //Default values
 
 var dialList = ('/attack' : \attackTime, '/decay' : \decayTime, '/sustain' : \sustainLevel, '/detune_factor' : \detuneFactor, '/buffer_no' : \bufferNum, '/flutter' : \flutter, '/release' : \releaseTime); //Mapping OSC names to SynthDef arguments
 
 var midiMatrix = (21 : '/flutter', 17 : '/attack', 20 : '/decay', 19 : '/sustain', 16 : '/detune_factor', 18 : '/release'); // connecting midi cc num to osc name
+
+var tuningList = ('just' : Tuning.just, 'harmonic' : Tuning.harmonic, 'bohlen-pierce' : Tuning.bp, 'meantone' : Tuning.mean5);
 
 if(thisProcess.openUDPPort(osc_port) == false){
     0.exit;
@@ -144,11 +146,13 @@ thisProcess.addOSCRecvFunc(
                     });
                 }, 
                 '/tuning', {
-                    switch(
-                        msg[1],
-                        'just', {tuning = Tuning.just;},
-                        'equal', {tuning = Tuning.et(msg[2]);}
-                    );
+                    if (msg[1] == 'equal'){
+                        tuning = Tuning.et(msg[2]);
+                    }
+                    {
+                        tuning = tuningList[msg[1]];
+                    };
+                    "Tuning: %\n".postf(tuning.name);
                 }
             );
         }
@@ -202,7 +206,7 @@ bootFunction = {
     MIDIdef.noteOn(\diabetesOn, 
         {
             arg vel,num;
-            var freq = Scale.chromatic(tuning).degreeToFreq(num, 12.midicps, 0);//TODO make variable
+            var freq = Scale.chromatic(tuning).degreeToFreq(num, 12.midicps, 0);//TODO make root freq variable
             if(keys[num].isNil,
             {
                 keys[num] = Synth.new(\DiabetesPanEnvelop, [\flutter, flutter, \outBus, outbus, \releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \bufferNum, bufferNum, \velocity, vel, \freq, freq, \pan, rrand(-0.25,0.25)]);
