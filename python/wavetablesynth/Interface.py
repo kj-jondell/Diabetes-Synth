@@ -9,6 +9,7 @@ import sounddevice
 import csv
 from pathlib import Path
 import python.helper.helper as helper
+from python.helper.helper import Settings
 
 VERBOSITY_SETTING =  ['-v', '--verbose']
 
@@ -17,8 +18,6 @@ UI_FILE_NAME = str(Path(__file__).parent / "ui/wavetable_gui.ui") # Qt Designer 
 WIDGETS_PAIRS = [('buffer_size', 'numframes'), ('sample_rate', 'samplerate'), ('memory_size', 'memsize')]
 WIDGET_LOAD_SEPARATELY = [('output_devices', 'device'), ('midi_devices', 'mididevice'), ('ports', 'port'), ('channels', 'midichannel')]
 
-AMT_CHANNELS = 2 #TODO variable...
-
 class Interface(QMainWindow):
 
     def __init__(self, args = None):
@@ -26,15 +25,16 @@ class Interface(QMainWindow):
 
         self.parse_arguments(args)
 
-        self.settings = helper.read_settings(helper.SETTINGS_FILE)
+        self.settings = Settings()
         self.sc_process = None
         self.controller_window = None
 
         self.load_view()
-        if self.settings:
-            self.load_output_devices(self.settings['device'])
-            self.load_midi_devices(self.settings['mididevice'])
-            helper.load_midi_ports(self.central_widget.channels)
+
+        if self.settings.is_empty():
+            self.load_output_devices(self.settings.device)
+            self.load_midi_devices(self.settings.mididevice)
+
         self.load_settings()
 
         # helper.change_enabled_settings(self.central_widget, exceptions = ["open_controller", "load_project"]) # TODO TEMPORARY!!!! must be removed!
@@ -72,13 +72,14 @@ class Interface(QMainWindow):
             self.controller_window = Controller.Controller()
         elif not self.controller_window.isVisible():
             self.controller_window.setVisible(True)
+            self.controller_window.reload_settings()
 
     ### Chosen settings from user input
     def start_synth(self):
-        for name, value in WIDGETS_PAIRS + WIDGET_LOAD_SEPARATELY:
+        for name, key in WIDGETS_PAIRS + WIDGET_LOAD_SEPARATELY:
             widget = getattr(self.central_widget, name)
-            self.settings[value] = widget.currentText()
-        helper.write_settings(self.settings, helper.SETTINGS_FILE)
+            self.settings.set(key, widget.currentText())
+        self.settings.write_settings()
 
         if self.sc_process == None:
             self.sc_process = subprocess.Popen(['/bin/bash', '-i', '-c', 'sclang supercollider/wavetable.scd'], stdout=subprocess.PIPE)
@@ -98,8 +99,7 @@ class Interface(QMainWindow):
             self.central_widget.project_name.setText(Path(self.chosen_project).stem)
             helper.change_enabled_settings(self.central_widget, exceptions = ["load_project", "open_controller"])
 
-            imported_settings = helper.read_settings(self.chosen_project)
-            self.settings = {**self.settings, **imported_settings} # merge setting dictionaries
+            self.settings.merge_settings(path=self.chosen_project)
             self.load_settings()
 
     def load_view(self):
@@ -117,7 +117,7 @@ class Interface(QMainWindow):
             sys.exit(-1)
 
     def load_ports(self, device):
-        helper.load_output_devices(device, self.central_widget.ports, AMT_CHANNELS)
+        helper.load_output_devices(device, self.central_widget.ports, helper.AMT_CHANNELS)
 
     def load_midi_devices(self, default_device):
         midi_devices = self.central_widget.midi_devices
@@ -127,31 +127,34 @@ class Interface(QMainWindow):
             midi_devices.addItem(device)
             if device == default_device:
                 midi_devices.setCurrentIndex(midi_devices.count()-1) # device index
+                helper.load_midi_ports(self.central_widget.channels)
+                self.central_widget.channels.setCurrentIndex(self.settings.get_midi_device_index())# TODO move this to helper
 
     def load_output_devices(self, default_device):
         output_devices = self.central_widget.output_devices
         output_devices.currentTextChanged.connect(self.load_ports)
 
         for device in sounddevice.query_devices():
-            if device['max_output_channels'] >= AMT_CHANNELS:
+            if device['max_output_channels'] >= helper.AMT_CHANNELS:
                 name = device['name']
                 output_devices.addItem(name)
                 if name == default_device:
                     output_devices.setCurrentIndex(output_devices.count()-1) # device index
                     self.load_ports(name)
+                    self.central_widget.ports.setCurrentIndex(self.settings.get_ports_index()) # TODO move this to helper
                     
     def load_settings(self):
         for pair in WIDGETS_PAIRS:
             self.load_setting(*pair)
 
-    def load_setting(self, widget_name, value):
+    def load_setting(self, widget_name, key):
         widget = getattr(self.central_widget, widget_name)
 
-        if value not in self.settings: # instead of catching KeyErrors
+        if self.settings.has(key): # instead of catching KeyErrors
             return
 
-        default_value = self.settings[value]
+        default_key = self.settings.get(key)
         for index in range(widget.count()):
-            if widget.itemText(index) == default_value:
+            if widget.itemText(index) == default_key:
                 widget.setCurrentIndex(index)
                 break

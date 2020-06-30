@@ -5,6 +5,7 @@ from PySide2.QtCore import Signal, Slot, Qt
 import numpy 
 import csv
 from pathlib import Path
+from python.helper.helper import Settings
 import python.helper.helper as helper
 
 class Converter():
@@ -53,11 +54,13 @@ class Converter():
 
     def update_settings(self):
         if self.settings['is_wavetable'] and self.centroids != None:
-            settings_dict = {}
-            settings_dict['numframes'] = str(self.settings['buffer_size'])
-            settings_dict['filename'] = self.settings['output_filename'].format('%')
-            settings_dict['order'] = helper.list_to_string(list(numpy.argsort(self.centroids)+1))
-            settings_dict['samplerate'] = str(self.settings['sample_rate'])
-            path = Path(self.settings['output_filename']).parents[1]
-            path = (path/path.stem).with_suffix(".dia")
-            helper.write_settings(settings_dict, path)
+            project_path = Path(self.settings['output_filename']).parents[1]
+            project_path = (project_path/project_path.stem).with_suffix(".dia")
+
+            output_settings = Settings(path=project_path, read_settings=False)
+            output_settings.numframes = self.settings['buffer_size']
+            output_settings.filename = self.settings['output_filename'].format('%')
+            output_settings.order = helper.list_to_string(list(numpy.argsort(self.centroids)+1))
+            output_settings.samplerate = self.settings['sample_rate']
+
+            output_settings.write_settings()

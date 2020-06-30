@@ -22,11 +22,8 @@ class Controller(QMainWindow):
         self.load_client()
         self.load_server()
 
-        device = "Soundflower (64ch)" #load_audio_device from csv
-        helper.load_output_devices(device, self.central_widget.ports)
-        #load_current_midi_port from csv
-        helper.load_midi_ports(self.central_widget.channels)
-        
+        self.reload_settings()
+
         self.central_widget.tuning.currentTextChanged.connect(self.tuning_change)
         self.central_widget.equal_temperament.valueChanged.connect(self.equal_temperament_change)
 
@@ -37,6 +34,17 @@ class Controller(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.show()
+
+    def reload_settings(self):
+        self.load_output_settings_from_file()
+
+    def load_output_settings_from_file(self):
+        settings = helper.read_settings()
+        device = settings['device']
+        helper.load_output_devices(device, self.central_widget.ports, helper.AMT_CHANNELS)
+        self.central_widget.ports.setCurrentIndex((int(settings['port'].split('-')[0])-1)/helper.AMT_CHANNELS) # TODO move this to helper
+        helper.load_midi_ports(self.central_widget.channels)
+        self.central_widget.channels.setCurrentIndex(int(settings['midichannel'])-1)
 
     def tuning_change(self, value):
         self.central_widget.equal_temperament.setEnabled(value == "Equal Temperament")
