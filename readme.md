@@ -1,5 +1,6 @@
 # Glucose Level Wavetable Synthesizer
 A wavetable-synthesizer using blood glucose levels as periodic waveforms. Controllable using MIDI.
+The program is divided into a converter -- converting the glucose level data into wavetable samples -- and a controller (interfacing the underlying SuperCollider synth).
 
 ## Glucose Level Data Converter
 ### Usable data
@@ -42,11 +43,12 @@ More info coming soon...
 ### Dependencies
 * sounddevice
 * python-osc
+* rtmidi
 
 ### Running
 1. First make sure all dependencies are installed (using pip):
 ```
-pip3 install sounddevice python-osc
+pip3 install sounddevice python-osc python-rtmidi
 ```
 
 ## Usage Examples 
