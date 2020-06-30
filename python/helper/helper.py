@@ -19,9 +19,6 @@ def load_output_devices(device, ports, amt_channels = 2):
     for port in range(1, amt_outputs, amt_channels): # 2 because stereo (works best with ableton)?) TODO implement multichannel!
         ports.addItem("{}-{}". format(port, port+(amt_channels-1)))
 
-### CSV READ / WRITE
-# TODO make settings class!
-
 # TODO group objects that are settings control instead of hardcoded hack !!!
 ### QT HELPER FUNCTIONS
 def change_enabled_settings(widgets, exceptions = ["file_chooser"], enable = True):
@@ -35,7 +32,6 @@ def change_enabled_settings(widgets, exceptions = ["file_chooser"], enable = Tru
 def list_to_string(input_list = []):
     return str(input_list)[1:-1].replace(',', '')
 
-# TODO implement this instead of settings dict
 @dataclass
 class Settings():
     """ 

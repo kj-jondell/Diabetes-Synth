@@ -1,8 +1,6 @@
 /**
 * TODO: - Write better comments
-*       - Make variable urls
 *       - Revise camelCase / snake_case
-*       - Handshake with Python
 *       - 512 sample long waveforms are laggy...
 * © Karl Johannes Jondell
 */
@@ -15,8 +13,11 @@ var osc_send = NetAddr.new("127.0.0.1", 1122);
 var keys = nil!128;
 var breakCommand = "startup finished";
 var device, memsize, order, numframes, filename, samplerate, ports, availableports = 2, mididevice = "IAC Driver Bus 1", outBus = 0, midichannel = 5; //settings variable declaration
-var setDialParameter, getMidiDevice, readAndEvaluateSettings, bootFunction, midiDefFunction;
-var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8, flutter = 0.0002, tuning = Tuning.just; //Default values
+var setDialParameter, getMidiDevice, readAndEvaluateSettings, bootFunction, loadPresets, midiDefFunction;
+
+var presets = ('/detune_factor' : 127, '/buffer_no' : 30, '/release' : 48, '/attack' : 48, '/sustain' : 110, '/decay' : 64, '/flutter' : 30);
+var booted = false;
+var detune, bufferNum, releaseTime, attackTime, sustainLevel, decayTime, flutter, tuning = Tuning.just; 
 
 var dialList = ('/attack' : \attackTime, '/decay' : \decayTime, '/sustain' : \sustainLevel, '/detune_factor' : \detuneFactor, '/buffer_no' : \bufferNum, '/flutter' : \flutter, '/release' : \releaseTime); //Mapping OSC names to SynthDef arguments
 
@@ -90,7 +91,7 @@ setDialParameter = {
             value = decayTime; 
         },
         '/sustain', {
-            sustainLevel = vel.linlin(0.0, 127.0, 0.2, 1);
+            sustainLevel = vel.linlin(0.0, 127.0, 0.1, 1);
             value = sustainLevel; 
         },
         '/flutter', {
@@ -102,7 +103,7 @@ setDialParameter = {
             value = detune; 
         },
         '/buffer_no', {
-            bufferNum = vel.linlin(0, 255, 1, order.size);
+            bufferNum = vel.linlin(0, 255, 0, order.size);
             value = bufferNum; 
         },
         '/release', {
@@ -160,6 +161,9 @@ thisProcess.addOSCRecvFunc(
                 }, 
                 '/port', {
                     outBus = msg[1].asInteger;
+                }, 
+                '/sendpresets', {
+                    loadPresets.value(sendOnly: true);
                 }
             );
         }
@@ -205,6 +209,20 @@ midiDefFunction = {
 
 };
 
+loadPresets = {
+    arg sendOnly = false;
+
+    presets.keys.do({
+        arg key;
+        if(sendOnly == false){
+            setDialParameter.value(presets[key], key);
+        };
+        osc_send.sendMsg(key, presets[key]);
+    });
+
+};
+
+
 bootFunction = {
     var buffers = Array.new(order.size);
     var envelop;
@@ -228,9 +246,9 @@ bootFunction = {
         {
             arg freq = 440, velocity = 67, attackTime = 0.01, releaseTime = 0.1, decayTime = 0.8, pan = 0, sustainLevel = 0.6, detuneFactor = 1.0, bufferNum = 1, outBus = 0, gate = 1, flutter = 0.0002;
             var freq_ = freq*BrownianWalk.kr(flutter);
-            var sig = VOsc3.ar(bufferNum+LFTri.kr(0.04).unipolar(mul:velocity.linlin(0,127,1,15)), freq1:freq_, freq2:freq_*(1.0-(detuneFactor)), freq3:freq_*(1.0+(detuneFactor)), mul: Lag2.kr(velocity.linlin(0,127,-15,-6).dbamp));
+            var sig = VOsc3.ar((bufferNum+LFTri.kr(0.04).unipolar(mul:velocity.linlin(0,127,1,15))).clip(0, order.size), freq1:freq_, freq2:freq_*(1.0-(detuneFactor)), freq3:freq_*(1.0+(detuneFactor)), mul: Lag2.kr(velocity.linlin(0,127,-15,-6).dbamp));
             var filter = BLowPass4.ar(sig, (freq*Lag2.kr(velocity.linlin(0,127,1.0,5.0))).clip(1,20000), Lag2.kr(velocity.linlin(0,127,1.0,2.0)));//TODO FIX blowpasss cutoff frequency!!
-            var env = filter*EnvGen.ar(Env.adsr(attackTime: attackTime, decayTime: decayTime, sustainLevel: sustainLevel, releaseTime: releaseTime, curve: -4.0), gate: gate, doneAction: Done.freeSelf);
+            var env = filter*EnvGen.ar(Env.adsr(attackTime: attackTime, decayTime: decayTime, sustainLevel: sustainLevel, releaseTime: releaseTime, curve: 0.0), gate: gate, doneAction: Done.freeSelf);
             var panned = Pan2.ar(env, pan);
             Out.ar(outBus, LeakDC.ar(panned));
         }
@@ -239,6 +257,9 @@ bootFunction = {
     Server.default.sync;
 
     midiDefFunction.value();
+    if(booted == false){
+        loadPresets.value(sendOnly: false);
+    }
 
 };
 

@@ -36,12 +36,14 @@ class Controller(QMainWindow):
         for dial in self.central_widget.findChildren(QDial):
                 dial.valueChanged.connect(self.dial_change)
 
+        self.signals = None
         if parent:
             self.signals = Signals()
             self.signals.port_change.connect(parent.port_change)
             self.signals.midichannel_change.connect(parent.midichannel_change)
         else:
             self.load_output_settings_from_file()
+            self.client.send_message("/sendpresets", "")
 
         self.setWindowTitle("Wavetable Controller")
         self.setCentralWidget(self.central_widget)
@@ -59,14 +61,15 @@ class Controller(QMainWindow):
         self.central_widget.midichannel.setCurrentIndex(self.settings.get_midi_device_index())
 
     def output_change(self, value):
-        # self.settings.port = value # save settings...
         if value:
             if self.sender().objectName() == "port":
-                self.client.send_message("/port", int(value.split("-")[0])-1) #send portchange (works both for ports and midichannel!)
-                self.signals.port_change.emit(self.sender().currentIndex())
+                self.client.send_message("/port", int(value.split("-")[0])-1)
+                if self.signals:
+                    self.signals.port_change.emit(self.sender().currentIndex())
             elif self.sender().objectName() == "midichannel":
-                self.client.send_message("/midichannel", int(value)-1) #send portchange (works both for ports and midichannel!)
-                self.signals.midichannel_change.emit(self.sender().currentIndex())
+                self.client.send_message("/midichannel", int(value)-1) 
+                if self.signals:
+                    self.signals.midichannel_change.emit(self.sender().currentIndex())
 
     def tuning_change(self, value):
         self.central_widget.equal_temperament.setEnabled(value == "Equal Temperament")
