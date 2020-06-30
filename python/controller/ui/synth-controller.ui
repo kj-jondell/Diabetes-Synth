@@ -635,7 +635,7 @@
    <property name="title">
     <string>Output settings</string>
    </property>
-   <widget class="QComboBox" name="ports">
+   <widget class="QComboBox" name="port">
     <property name="enabled">
      <bool>true</bool>
     </property>
@@ -695,7 +695,7 @@
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QComboBox" name="channels">
+   <widget class="QComboBox" name="midichannel">
     <property name="enabled">
      <bool>true</bool>
     </property>

@@ -33,7 +33,7 @@
   </property>
   <widget class="QComboBox" name="output_devices">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -67,7 +67,7 @@
   </widget>
   <widget class="QPushButton" name="run_button">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -83,7 +83,7 @@
   </widget>
   <widget class="QComboBox" name="buffer_size">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -196,7 +196,7 @@
   </widget>
   <widget class="QComboBox" name="sample_rate">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -277,7 +277,7 @@
   </widget>
   <widget class="QComboBox" name="ordering">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -334,7 +334,7 @@
   </widget>
   <widget class="QComboBox" name="memory_size">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -380,7 +380,7 @@
   </widget>
   <widget class="QComboBox" name="ports">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -414,7 +414,7 @@
   </widget>
   <widget class="QComboBox" name="channels">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -464,7 +464,7 @@
   </widget>
   <widget class="QComboBox" name="midi_devices">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -494,6 +494,22 @@
    </property>
    <property name="text">
     <string>Open controller</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="open_converter">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>230</y>
+     <width>121</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Open converter</string>
    </property>
   </widget>
  </widget>

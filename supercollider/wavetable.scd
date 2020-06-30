@@ -14,8 +14,8 @@ var osc_port = 1121; //TODO read from settings file (or argument when started)!
 var osc_send = NetAddr.new("127.0.0.1", 1122);
 var keys = nil!128;
 var breakCommand = "startup finished";
-var device, memsize, order, numframes, filename, samplerate, ports, mididevice = "IAC Driver Bus 1", outbus = 0, midichannel = 5; //settings variable declaration
-var setDialParameter, getMidiDevice, readAndEvaluateSettings, bootFunction;
+var device, memsize, order, numframes, filename, samplerate, ports, availableports = 2, mididevice = "IAC Driver Bus 1", outBus = 0, midichannel = 5; //settings variable declaration
+var setDialParameter, getMidiDevice, readAndEvaluateSettings, bootFunction, midiDefFunction;
 var detune = 1.5, bufferNum = 1, releaseTime = 2, attackTime = 0.01, sustainLevel = 0.8, decayTime = 0.8, flutter = 0.0002, tuning = Tuning.just; //Default values
 
 var dialList = ('/attack' : \attackTime, '/decay' : \decayTime, '/sustain' : \sustainLevel, '/detune_factor' : \detuneFactor, '/buffer_no' : \bufferNum, '/flutter' : \flutter, '/release' : \releaseTime); //Mapping OSC names to SynthDef arguments
@@ -53,7 +53,8 @@ readAndEvaluateSettings = {
     filename = settings["filename"][1..];
     samplerate = settings["samplerate"][1..];
     ports = settings["port"][1..].split($-);
-    outbus = ports[0].asInteger-1;
+    availableports = settings["availableports"][1..].asInteger;
+    outBus = ports[0].asInteger-1;
 
     // TODO Raise better error when using corrupt settings file!
 
@@ -65,7 +66,7 @@ readAndEvaluateSettings = {
 
     Server.default.options.memSize = memsize;
     Server.default.options.sampleRate = samplerate;
-    Server.default.options.numOutputBusChannels = ports[1].asInteger; //TODO setting for amt outputs
+    Server.default.options.numOutputBusChannels = availableports; //TODO is this possible to get info through sc instead of settings...
 
     MIDIIn.disconnectAll();
     MIDIIn.connect(0, getMidiDevice.value(mididevice));
@@ -137,7 +138,6 @@ thisProcess.addOSCRecvFunc(
             switch(
                 msg[0],
                 '/reboot', {
-                    MIDIdef.freeAll;
                     Server.default.freeAll;
 
                     Server.default.quit({
@@ -153,11 +153,57 @@ thisProcess.addOSCRecvFunc(
                         tuning = tuningList[msg[1]];
                     };
                     "Tuning: %\n".postf(tuning.name);
+                }, 
+                '/midichannel', {
+                    midichannel = msg[1].asInteger;
+                    midiDefFunction.value();
+                }, 
+                '/port', {
+                    outBus = msg[1].asInteger;
                 }
             );
         }
     };
 );
+
+midiDefFunction = {
+    MIDIdef.freeAll;
+
+    MIDIdef.noteOff(\diabetesOff,
+        {
+            arg vel,num;
+            if(keys[num].notNil,
+            {
+                keys[num].release;
+                keys[num] = nil;
+            });
+        }, chan: midichannel
+    );
+
+    MIDIdef.noteOn(\diabetesOn, 
+        {
+            arg vel,num;
+            var freq = Scale.chromatic(tuning).degreeToFreq(num, 12.midicps, 0);//TODO make root freq variable
+            if(keys[num].isNil,
+            {
+                keys[num] = Synth.new(\DiabetesPanEnvelop, [\flutter, flutter, \outBus, outBus, \releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \bufferNum, bufferNum, \velocity, vel, \freq, freq, \pan, rrand(-0.25,0.25)]);
+            });
+        }, chan: midichannel
+    );
+
+    MIDIdef.cc(\cc,
+        {
+            arg vel, num;
+            var oscSymbol = midiMatrix[num];
+            if (oscSymbol != nil){
+                setDialParameter.value(vel, oscSymbol);
+                osc_send.sendMsg(oscSymbol, vel);
+            };
+        }, chan: midichannel
+    );
+
+
+};
 
 bootFunction = {
     var buffers = Array.new(order.size);
@@ -192,38 +238,7 @@ bootFunction = {
 
     Server.default.sync;
 
-    MIDIdef.noteOff(\diabetesOff,
-        {
-            arg vel,num;
-            if(keys[num].notNil,
-            {
-                keys[num].release;
-                keys[num] = nil;
-            });
-        }, chan: midichannel
-    );
-
-    MIDIdef.noteOn(\diabetesOn, 
-        {
-            arg vel,num;
-            var freq = Scale.chromatic(tuning).degreeToFreq(num, 12.midicps, 0);//TODO make root freq variable
-            if(keys[num].isNil,
-            {
-                keys[num] = Synth.new(\DiabetesPanEnvelop, [\flutter, flutter, \outBus, outbus, \releaseTime, releaseTime, \attackTime, attackTime, \detuneFactor, detune, \bufferNum, bufferNum, \velocity, vel, \freq, freq, \pan, rrand(-0.25,0.25)]);
-            });
-        }, chan: midichannel
-    );
-
-    MIDIdef.cc(\cc,
-        {
-            arg vel, num;
-            var oscSymbol = midiMatrix[num];
-            if (oscSymbol != nil){
-                setDialParameter.value(vel, oscSymbol);
-                osc_send.sendMsg(oscSymbol, vel);
-            };
-        }
-    );
+    midiDefFunction.value();
 
 };
 

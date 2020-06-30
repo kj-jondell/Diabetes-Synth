@@ -1,50 +1,72 @@
 import sys 
 from PySide2.QtWidgets import QMainWindow, QDial, QApplication
-from PySide2.QtCore import Slot, Qt, QFile, QThread, QIODevice, QByteArray
+from PySide2.QtCore import Slot, Qt, QObject, Signal, QFile, QThread, QIODevice, QByteArray
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtNetwork import QUdpSocket, QHostAddress
 from pythonosc import udp_client
 from pythonosc.parsing import osc_types
 from pathlib import Path
 import python.helper.helper as helper
+from python.helper.helper import Settings
 import sounddevice 
 
 UI_FILE_NAME = str(Path(__file__).parent / "ui/synth-controller.ui") # Qt Designer ui file TODO fix path!
 OSC_SEND_SETTINGS = ("127.0.0.1", 1121)
 OSC_RECEIVE_PORT = 1122
 
+class Signals(QObject):
+    port_change = Signal(int)
+    midichannel_change = Signal(int)
+
 class Controller(QMainWindow):
 
-    def __init__(self, args = None):
+    def __init__(self, args = None, parent = None):
         QMainWindow.__init__(self)
 
         self.load_view()
         self.load_client()
         self.load_server()
 
-        self.reload_settings()
-
         self.central_widget.tuning.currentTextChanged.connect(self.tuning_change)
         self.central_widget.equal_temperament.valueChanged.connect(self.equal_temperament_change)
 
+        self.central_widget.port.currentTextChanged.connect(self.output_change)
+        self.central_widget.midichannel.currentTextChanged.connect(self.output_change)
+
         for dial in self.central_widget.findChildren(QDial):
                 dial.valueChanged.connect(self.dial_change)
+
+        if parent:
+            self.signals = Signals()
+            self.signals.port_change.connect(parent.port_change)
+            self.signals.midichannel_change.connect(parent.midichannel_change)
+        else:
+            self.load_output_settings_from_file()
 
         self.setWindowTitle("Wavetable Controller")
         self.setCentralWidget(self.central_widget)
 
         self.show()
 
-    def reload_settings(self):
-        self.load_output_settings_from_file()
-
     def load_output_settings_from_file(self):
-        settings = helper.read_settings()
-        device = settings['device']
-        helper.load_output_devices(device, self.central_widget.ports, helper.AMT_CHANNELS)
-        self.central_widget.ports.setCurrentIndex((int(settings['port'].split('-')[0])-1)/helper.AMT_CHANNELS) # TODO move this to helper
-        helper.load_midi_ports(self.central_widget.channels)
-        self.central_widget.channels.setCurrentIndex(int(settings['midichannel'])-1)
+        self.settings = Settings()
+        self.settings.read_settings()
+
+        helper.load_output_devices(self.settings.device, self.central_widget.port, helper.AMT_CHANNELS)
+        self.central_widget.port.setCurrentIndex(self.settings.get_ports_index()) # TODO move this to helper
+
+        helper.load_midi_ports(self.central_widget.midichannel)
+        self.central_widget.midichannel.setCurrentIndex(self.settings.get_midi_device_index())
+
+    def output_change(self, value):
+        # self.settings.port = value # save settings...
+        if value:
+            if self.sender().objectName() == "port":
+                self.client.send_message("/port", int(value.split("-")[0])-1) #send portchange (works both for ports and midichannel!)
+                self.signals.port_change.emit(self.sender().currentIndex())
+            elif self.sender().objectName() == "midichannel":
+                self.client.send_message("/midichannel", int(value)-1) #send portchange (works both for ports and midichannel!)
+                self.signals.midichannel_change.emit(self.sender().currentIndex())
 
     def tuning_change(self, value):
         self.central_widget.equal_temperament.setEnabled(value == "Equal Temperament")

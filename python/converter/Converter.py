@@ -57,10 +57,11 @@ class Converter():
             project_path = Path(self.settings['output_filename']).parents[1]
             project_path = (project_path/project_path.stem).with_suffix(".dia")
 
-            output_settings = Settings(path=project_path, read_settings=False)
+            output_settings = Settings()
             output_settings.numframes = self.settings['buffer_size']
             output_settings.filename = self.settings['output_filename'].format('%')
             output_settings.order = helper.list_to_string(list(numpy.argsort(self.centroids)+1))
             output_settings.samplerate = self.settings['sample_rate']
+            output_settings.projectname = project_path.stem
 
-            output_settings.write_settings()
+            output_settings.write_settings(project_path)

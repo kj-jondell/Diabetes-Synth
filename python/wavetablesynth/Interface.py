@@ -1,10 +1,12 @@
 import sys, subprocess, rtmidi
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
                                QVBoxLayout, QWidget, QFileDialog,
-                               QMainWindow, QMenu, QMenuBar)
+                               QMainWindow, QMenu, QMenuBar,
+                               QComboBox)
 from PySide2.QtCore import Slot, Qt, QFile, QIODevice
 from PySide2.QtUiTools import QUiLoader
 from python.controller import Controller
+from python.converter import Converter
 import sounddevice 
 import csv
 from pathlib import Path
@@ -16,7 +18,7 @@ VERBOSITY_SETTING =  ['-v', '--verbose']
 BREAK_COMMAND = "startup finished"
 UI_FILE_NAME = str(Path(__file__).parent / "ui/wavetable_gui.ui") # Qt Designer ui file TODO fix path!
 WIDGETS_PAIRS = [('buffer_size', 'numframes'), ('sample_rate', 'samplerate'), ('memory_size', 'memsize')]
-WIDGET_LOAD_SEPARATELY = [('output_devices', 'device'), ('midi_devices', 'mididevice'), ('ports', 'port'), ('channels', 'midichannel')]
+WIDGET_LOAD_SEPARATELY = [('output_devices', 'device'), ('midi_devices', 'mididevice'), ('ports', 'port'), ('channels', 'midichannel'), ('project_name', 'projectname')]
 
 class Interface(QMainWindow):
 
@@ -25,23 +27,27 @@ class Interface(QMainWindow):
 
         self.parse_arguments(args)
 
-        self.settings = Settings()
         self.sc_process = None
         self.controller_window = None
+        self.converter_window = None
 
         self.load_view()
 
-        if self.settings.is_empty():
-            self.load_output_devices(self.settings.device)
-            self.load_midi_devices(self.settings.mididevice)
+        self.settings = Settings()
+        self.loaded_settings = True
+        if not self.settings.read_settings(): #Import settings
+            helper.change_enabled_settings(self.central_widget, exceptions = ["load_project", "open_controller", "open_converter"], enable = False) #if no default project
+            self.loaded_settings = False
+
+        self.load_output_devices(self.settings.device)
+        self.load_midi_devices(self.settings.mididevice)
 
         self.load_settings()
-
-        # helper.change_enabled_settings(self.central_widget, exceptions = ["open_controller", "load_project"]) # TODO TEMPORARY!!!! must be removed!
 
         self.central_widget.load_project.clicked.connect(self.choose_project)
         self.central_widget.run_button.clicked.connect(self.start_synth)
         self.central_widget.open_controller.clicked.connect(self.open_controller)
+        self.central_widget.open_converter.clicked.connect(self.open_converter)
 
         QApplication.instance().aboutToQuit.connect(self.cleanup)
 
@@ -50,7 +56,20 @@ class Interface(QMainWindow):
 
         self.show()
 
+    # This slot is called from the Controller when midichannel has changed
+    @Slot(int) 
+    def midichannel_change(self, index):
+        self.central_widget.channels.setCurrentIndex(index)
+
+    # This slot is called from the Controller when port has changed
+    @Slot(int) 
+    def port_change(self, index):
+        self.central_widget.ports.setCurrentIndex(index)
+
     def cleanup(self):
+        if self.loaded_settings:
+            self.update_settings()
+
         if self.sc_process != None:
             self.sc_process.kill()
 
@@ -64,22 +83,35 @@ class Interface(QMainWindow):
             if self.verbose and output: 
                 print(output)
             hung_counter = 0 if output else (hung_counter+1)
-            if output == BREAK_COMMAND or hung_counter == 20:# break if hung
+            if output == BREAK_COMMAND:
                 break
+            elif hung_counter == 20:# break if hung TODO preferably the program should try to restart supercollider (but currently breaks..)
+                sys.exit(-1)
+
+    def open_converter(self):
+        if self.converter_window == None:
+            self.converter_window = Converter.Converter()
+        elif not self.converter_window.view.isVisible():
+            self.converter_window.view.setVisible(True)
 
     def open_controller(self):
         if self.controller_window == None:
-            self.controller_window = Controller.Controller()
+            self.controller_window = Controller.Controller(parent=self)
         elif not self.controller_window.isVisible():
             self.controller_window.setVisible(True)
-            self.controller_window.reload_settings()
+        self.controller_window.load_output_settings_from_file()
+
+    def update_settings(self):
+        # LOAD comboboxes
+        for name, key in WIDGETS_PAIRS + WIDGET_LOAD_SEPARATELY:
+            widget = getattr(self.central_widget, name)
+            setattr(self.settings, key, widget.currentText() if type(widget) == QComboBox else widget.text())
+        self.settings.availableports = sounddevice.query_devices(self.settings.device)['max_output_channels'] #TODO should be done in supercollider ( if possible? )
+        self.settings.write_settings()
 
     ### Chosen settings from user input
     def start_synth(self):
-        for name, key in WIDGETS_PAIRS + WIDGET_LOAD_SEPARATELY:
-            widget = getattr(self.central_widget, name)
-            self.settings.set(key, widget.currentText())
-        self.settings.write_settings()
+        self.update_settings()
 
         if self.sc_process == None:
             self.sc_process = subprocess.Popen(['/bin/bash', '-i', '-c', 'sclang supercollider/wavetable.scd'], stdout=subprocess.PIPE)
@@ -96,7 +128,6 @@ class Interface(QMainWindow):
         self.chosen_project, filter_type = QFileDialog.getOpenFileName(self.central_widget, 'Open file', filter = "DIA project (*.dia)")
 
         if self.chosen_project:
-            self.central_widget.project_name.setText(Path(self.chosen_project).stem)
             helper.change_enabled_settings(self.central_widget, exceptions = ["load_project", "open_controller"])
 
             self.settings.merge_settings(path=self.chosen_project)
@@ -122,13 +153,14 @@ class Interface(QMainWindow):
     def load_midi_devices(self, default_device):
         midi_devices = self.central_widget.midi_devices
         midiout = rtmidi.MidiIn()
+        helper.load_midi_ports(self.central_widget.channels)
 
         for device in midiout.get_ports():
             midi_devices.addItem(device)
             if device == default_device:
                 midi_devices.setCurrentIndex(midi_devices.count()-1) # device index
-                helper.load_midi_ports(self.central_widget.channels)
-                self.central_widget.channels.setCurrentIndex(self.settings.get_midi_device_index())# TODO move this to helper
+
+        self.central_widget.channels.setCurrentIndex(self.settings.get_midi_device_index())
 
     def load_output_devices(self, default_device):
         output_devices = self.central_widget.output_devices
@@ -141,19 +173,24 @@ class Interface(QMainWindow):
                 if name == default_device:
                     output_devices.setCurrentIndex(output_devices.count()-1) # device index
                     self.load_ports(name)
-                    self.central_widget.ports.setCurrentIndex(self.settings.get_ports_index()) # TODO move this to helper
+
+        self.central_widget.ports.setCurrentIndex(self.settings.get_ports_index()) 
                     
     def load_settings(self):
-        for pair in WIDGETS_PAIRS:
-            self.load_setting(*pair)
+        projectname = self.settings.projectname
+        if projectname:
+            self.central_widget.project_name.setText(projectname)
+            for pair in WIDGETS_PAIRS:
+                self.load_setting(*pair)
+        else:
+            self.central_widget.project_name.setText("Project not found")
+
+        self.loaded_settings = bool(projectname)
 
     def load_setting(self, widget_name, key):
         widget = getattr(self.central_widget, widget_name)
 
-        if self.settings.has(key): # instead of catching KeyErrors
-            return
-
-        default_key = self.settings.get(key)
+        default_key = getattr(self.settings, key)
         for index in range(widget.count()):
             if widget.itemText(index) == default_key:
                 widget.setCurrentIndex(index)
