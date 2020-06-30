@@ -25,11 +25,11 @@ pip3 install scipy numpy soundfile xlrd pyside2 python-dateutil
 ```
 2. Then execute the following command to install and run the program. 
 ```
-git clone https://github.com/kj-jondell/Diabetes-Synth.git ; cd Diabetes-Synth ; python3 -m python.converter
+git clone https://github.com/kj-jondell/Diabetes-Synth.git ; cd Diabetes-Synth ; python3 -m python
 ```
 3. To run the program after installation, simply cd into the python-directory and execute:
 ```
-python3 -m <python.controller | python.converter | python.wavetablesynth>
+python3 -m python <controller | converter | synth>
 ``` 
 <!-- ### Release page -->
 
