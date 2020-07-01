@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>synthcontroller.ui</file>
+    </qresource>
+</RCC>
