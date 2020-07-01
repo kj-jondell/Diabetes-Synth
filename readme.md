@@ -57,3 +57,6 @@ pip3 install sounddevice python-osc python-rtmidi
 This synth is used in the following songs:
 * [sc-200322-231835](https://soundcloud.com/k-j-jondell/sc-200322-231835)
 
+## Upcoming
+Instead of using sclang as an intermediary, Python will do all parsing and send osc messages to scsynth straight!
+
