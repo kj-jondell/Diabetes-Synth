@@ -30,6 +30,7 @@ if(thisProcess.openUDPPort(osc_port) == false){
 };
 
 MIDIClient.init;
+// Server.supernova;
 
 readAndEvaluateSettings = {
     settings = Dictionary.new;
