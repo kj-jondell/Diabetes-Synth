@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>465</width>
-    <height>422</height>
+    <height>427</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -480,6 +480,19 @@
       </font>
      </property>
     </widget>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>101</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Start synth</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="tuning_group">
     <property name="geometry">
@@ -799,6 +812,7 @@
      <string>Controller</string>
     </property>
     <addaction name="actionOpen_Converter"/>
+    <addaction name="actionOpen_settings"/>
    </widget>
    <addaction name="menuController"/>
   </widget>
@@ -806,6 +820,11 @@
   <action name="actionOpen_Converter">
    <property name="text">
     <string>Open Converter</string>
+   </property>
+  </action>
+  <action name="actionOpen_settings">
+   <property name="text">
+    <string>Open Settings</string>
    </property>
   </action>
  </widget>
