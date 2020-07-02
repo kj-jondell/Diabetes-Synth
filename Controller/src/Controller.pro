@@ -3,6 +3,7 @@ TARGET = Controller
 
 LIBS += -L/usr/local/opt/rtmidi/lib -lrtmidi
 INCLUDEPATH += /usr/local/opt/rtmidi/include
+INCLUDEPATH += /usr/local/opt/boost/include
 
 QT += multimedia 
 

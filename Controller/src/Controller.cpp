@@ -25,6 +25,8 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
   connect(parser, &MidiParser::noteOff, this,
           &SynthController::sendNoteOff); // get incoming note_off
 
+  this->startScSynth(2, 2); // starts scsynth
+
   socket = new QUdpSocket(this);
   socket->bind(QHostAddress::LocalHost, OSC_ADDRESS);
 
@@ -46,6 +48,36 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
   this->sendMessage(msg);
   // TEMPORARY
 }
+
+/**
+ * Starts sc synth process. PID is stored as variable
+ */
+void SynthController::startScSynth(int in, int out) {
+  scsynthPid = fork();
+
+  if (scsynthPid == 0) {
+    ostringstream in_str, out_str, port_str;
+    char *port_name = "Soundflower (64ch)"; // TODO variable...
+
+    in_str << 2;
+    out_str << 2;
+    port_str << OSC_SEND_ADDRESS;
+
+    // char *args[] = {"scsynth", "-i",   "2",  "-o",      "2",
+    //                 "-u",      "1234", "-H", port_name, NULL};
+    // char *args[] = {"ls", "-a", NULL};
+    char *args[] = {"scsynth", "-i", "2", "-o", "2", "-u", "1234", NULL};
+
+    qDebug() << execvp(args[0], args);
+    exit(-1);
+    // kill if scsynth won't start?
+  }
+}
+
+/**
+ * Kill scsynth if program is closed
+ */
+void SynthController::cleanupOnQuit() { kill(scsynthPid, SIGTERM); }
 
 void SynthController::sendNoteOff(int num, int velocity) {
   if (keys[num] != -1) {
@@ -81,6 +113,9 @@ void SynthController::sendNoteOn(int num, int velocity) {
   }
 }
 
+/**
+ * Respond to user input (dials)
+ */
 void SynthController::valueChanged(int idx) {
   QObject *sender = QObject::sender();
 

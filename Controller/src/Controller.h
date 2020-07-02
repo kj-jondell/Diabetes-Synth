@@ -18,7 +18,13 @@
 #include "MidiParser.h"
 #include "ui_synthcontroller.h"
 
+#include <csignal>
+#include <cstdlib>
 #include <mutex>
+#include <sstream>
+#include <unistd.h>
+
+#include <boost/format.hpp>
 
 using namespace std;
 
@@ -39,8 +45,11 @@ class SynthController : public Controller {
 public:
   explicit SynthController(QWidget *parent = nullptr);
   float attack = 0.1;
+  char *filename = "/Users/kj/Documents/diabetes/200630/samples/sample_%d.wav";
   int nodeCounter = 1000;
   int keys[MIDI_KEYS];
+
+  void cleanupOnQuit();
 
 public slots:
   void sendNoteOn(int, int);
@@ -52,10 +61,12 @@ private:
   oscpkt::PacketReader packet_reader;
   MidiParser *parser;
   std::mutex mtx;
+  pid_t scsynthPid;
 
   int doneCounter = 0; // TODO temporary
 
   void sendMessage(oscpkt::Message message);
+  void startScSynth(int in = 2, int out = 2);
   int nextNodeID();
 
 private slots:

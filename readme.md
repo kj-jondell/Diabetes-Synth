@@ -51,12 +51,14 @@ More info coming soon...
 pip3 install sounddevice python-osc python-rtmidi
 ```
 
-2. `sclang` must be symlinked to run this synth (add `alias sclang=/path/to/sclang` to `~/.bash_profile`)
-
 ## Usage Examples 
 This synth is used in the following songs:
 * [sc-200322-231835](https://soundcloud.com/k-j-jondell/sc-200322-231835)
 
 ## Upcoming
 Instead of using sclang as an intermediary, Python will do all parsing and send osc messages to scsynth straight!
+
+### NOTE
+`scsynth` must be in $PATH! Add in `~/.bashrc` or `~/.bash_profile` 
+
 
