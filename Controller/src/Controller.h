@@ -7,7 +7,9 @@
 #include <QMainWindow>
 #include <QNetworkDatagram>
 #include <QObject>
+#include <QProcess>
 #include <QString>
+#include <QStringList>
 #include <QUdpSocket>
 
 #include <oscpkt/oscpkt.hh>
@@ -61,12 +63,12 @@ private:
   oscpkt::PacketReader packet_reader;
   MidiParser *parser;
   std::mutex mtx;
-  pid_t scsynthPid;
+  QProcess *scsynth;
 
   int doneCounter = 0; // TODO temporary
 
   void sendMessage(oscpkt::Message message);
-  void startScSynth(int in = 2, int out = 2);
+  void startScSynth();
   int nextNodeID();
 
 private slots:

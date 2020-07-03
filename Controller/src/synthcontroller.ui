@@ -480,7 +480,7 @@
       </font>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="start_synth">
      <property name="geometry">
       <rect>
        <x>10</x>

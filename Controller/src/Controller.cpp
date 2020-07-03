@@ -24,8 +24,8 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
           &SynthController::sendNoteOn); // get incoming note_on
   connect(parser, &MidiParser::noteOff, this,
           &SynthController::sendNoteOff); // get incoming note_off
-
-  this->startScSynth(2, 2); // starts scsynth
+  connect(start_synth, &QPushButton::clicked, this,
+          &SynthController::startScSynth);
 
   socket = new QUdpSocket(this);
   socket->bind(QHostAddress::LocalHost, OSC_ADDRESS);
@@ -52,40 +52,49 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
 /**
  * Starts sc synth process. PID is stored as variable
  */
-void SynthController::startScSynth(int in, int out) {
-  scsynthPid = fork();
+void SynthController::startScSynth() {
+  int in = 2, out = 2;
+  QString program = "/Applications/SuperCollider/SuperCollider.app/Contents/"
+                    "Resources/scsynth";
+  QStringList args;
+  args << "-i" << QString::number(in) << "-o" << QString::number(out) << "-u"
+       << QString::number(OSC_SEND_ADDRESS) << "-H"
+       << "Soundflower (64ch)";
+  // QStringList args;
+  // args << "-i"
+  //      << "2"
+  //      << "-o"
+  //      << "2"
+  //      << "-u"
+  //      << "1234"
+  //      << "-H"
+  //      << "Soundflower (64ch)";
 
-  if (scsynthPid == 0) {
-    ostringstream in_str, out_str, port_str;
-    char *port_name = "Soundflower (64ch)"; // TODO variable...
+  scsynth = new QProcess(this);
+  scsynth->setProgram(program);
+  scsynth->setArguments(args);
 
-    in_str << 2;
-    out_str << 2;
-    port_str << OSC_SEND_ADDRESS;
-
-    // char *args[] = {"scsynth", "-i",   "2",  "-o",      "2",
-    //                 "-u",      "1234", "-H", port_name, NULL};
-    // char *args[] = {"ls", "-a", NULL};
-    char *args[] = {"scsynth", "-i", "2", "-o", "2", "-u", "1234", NULL};
-
-    qDebug() << execvp(args[0], args);
+  if (!scsynth->startDetached()) {
+    qDebug() << "failed to start";
     exit(-1);
-    // kill if scsynth won't start?
   }
 }
 
 /**
  * Kill scsynth if program is closed
  */
-void SynthController::cleanupOnQuit() { kill(scsynthPid, SIGTERM); }
+void SynthController::cleanupOnQuit() {
+  oscpkt::Message msg;
+  msg.init("/quit");
+  this->sendMessage(msg);
+}
 
 void SynthController::sendNoteOff(int num, int velocity) {
   if (keys[num] != -1) {
     oscpkt::Message msg;
-    msg.init("/n_set")
-        .pushInt32(keys[num]) // handle nodeID
-        .pushStr("gate")
-        .pushInt32(0); // set keys[num] to -1
+    msg.init("/n_free").pushInt32(keys[num]); // handle nodeID
+                                              //.pushStr("gate")
+    //.pushInt32(0); // set keys[num] to -1
     this->sendMessage(msg);
     keys[num] = -1;
   }
@@ -99,15 +108,15 @@ void SynthController::sendNoteOn(int num, int velocity) {
     keys[num] = this->nextNodeID();
 
     msg.init("/s_new")
-        .pushStr("DiabetesPanEnvelop")
+        .pushStr("sine")
         .pushInt32(
             keys[num]) // handle nodeID (if keys[num] == -1 then generate node)
         .pushInt32(1)
         .pushInt32(0)
         .pushStr("freq")
-        .pushFloat(num * 10)
-        .pushStr("attackTime")
-        .pushFloat(attack);
+        .pushFloat(num * 10);
+    //.pushStr("attackTime")
+    //.pushFloat(attack);
     this->sendMessage(msg);
     mtx.unlock(); // mutex needed?
   }
