@@ -53,22 +53,15 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
  * Starts sc synth process. PID is stored as variable
  */
 void SynthController::startScSynth() {
-  int in = 2, out = 2;
-  QString program = "/Applications/SuperCollider/SuperCollider.app/Contents/"
-                    "Resources/scsynth";
+  int in = 2, out = 2; // TODO
+  QString program =
+      "/Applications/SuperCollider/SuperCollider.app/Contents/"
+      "Resources/scsynth"; // TODO make into only scsynth (requires $PATH
+                           // setting when not running from terminal!)
   QStringList args;
   args << "-i" << QString::number(in) << "-o" << QString::number(out) << "-u"
        << QString::number(OSC_SEND_ADDRESS) << "-H"
        << "Soundflower (64ch)";
-  // QStringList args;
-  // args << "-i"
-  //      << "2"
-  //      << "-o"
-  //      << "2"
-  //      << "-u"
-  //      << "1234"
-  //      << "-H"
-  //      << "Soundflower (64ch)";
 
   scsynth = new QProcess(this);
   scsynth->setProgram(program);
@@ -76,8 +69,11 @@ void SynthController::startScSynth() {
 
   if (!scsynth->startDetached()) {
     qDebug() << "failed to start";
-    exit(-1);
+    exit(-1); // kill or try again?
   }
+
+  // TODO SYNC WITH SERVER
+  // TODO LOAD BUFFERS FROM CHOSEN PROJECT
 }
 
 /**
