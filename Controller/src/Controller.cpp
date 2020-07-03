@@ -137,7 +137,7 @@ void SynthController::valueChanged(int idx) {
   QObject *sender = QObject::sender();
 
   dialValues[sender->objectName()] =
-      linearConversion(idx, rangeMap[sender->objectName()]);
+      linearConversion(idx, rangeMap[sender->objectName()]); // TODO exeption...
   // oscParser->setParameterFloat(); TODO
 }
 
