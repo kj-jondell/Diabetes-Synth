@@ -24,6 +24,7 @@ public:
 signals:
   void noteOn(int num, int velocity);
   void noteOff(int num, int velocity);
+  void cc(int num, int velocity);
 
 private:
   RtMidiIn *midiin;

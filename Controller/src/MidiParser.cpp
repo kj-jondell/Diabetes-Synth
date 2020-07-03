@@ -36,6 +36,7 @@ void MidiParser::callback(int channel_filter, int eventType, int num,
   if (channel_filter == channel)
     switch (eventType) {
     case CC:
+      emit cc(num, velocity);
       break;
     case NOTE_ON:
       emit noteOn(num, velocity);

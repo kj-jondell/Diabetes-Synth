@@ -1,10 +1,20 @@
 #include "Controller.h"
 
+/**
+ * Linear - linear range mapping
+ */
+float linearConversion(int oldValue, vector<float> rangeList) {
+  return ((float)oldValue - rangeList[0]) / (rangeList[1] - rangeList[0]) *
+             (rangeList[3] - rangeList[2]) +
+         rangeList[2];
+}
+
 Controller::Controller(QWidget *parent) : QMainWindow(parent) { setupUi(this); }
 Controller::~Controller() {}
 
 SynthController::SynthController(QWidget *parent) : Controller(parent) {
-  parser = new MidiParser(this);
+  midiParser = new MidiParser(this);
+  oscParser = new OscParser(this, OSC_ADDRESS, OSC_SEND_ADDRESS);
 
   for (int i = 0; i < MIDI_KEYS; i++) // initilize keys
     keys[i] = -1;
@@ -15,38 +25,35 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
   connect(midichannel, // respond to change of midichannel
           static_cast<void (QComboBox::*)(int index)>(
               &QComboBox::currentIndexChanged),
-          parser, &MidiParser::setChannel);
+          midiParser, &MidiParser::setChannel);
 
   for (auto dial : findChildren<QDial *>()) // respond to change of dial
     connect(dial, &QDial::valueChanged, this, &SynthController::valueChanged);
 
-  connect(parser, &MidiParser::noteOn, this,
+  connect(midiParser, &MidiParser::noteOn, this,
           &SynthController::sendNoteOn); // get incoming note_on
-  connect(parser, &MidiParser::noteOff, this,
+  connect(midiParser, &MidiParser::noteOff, this,
           &SynthController::sendNoteOff); // get incoming note_off
+  connect(midiParser, &MidiParser::cc, this,
+          &SynthController::parseCC); // get incoming cc
+
   connect(start_synth, &QPushButton::clicked, this,
-          &SynthController::startScSynth);
+          &SynthController::startScSynth); // respond to start_synth pressed!
 
-  socket = new QUdpSocket(this);
-  socket->bind(QHostAddress::LocalHost, OSC_ADDRESS);
+  this->initParameters();
+}
 
-  connect(socket, &QUdpSocket::readyRead, this, &SynthController::oscReady);
+/**
+ * Initilize parameters (maybe from csv or preset file)
+ */
+void SynthController::initParameters() {
+  dialValues[ATTACK] = 0.1;
+  dialValues[RELEASE] = 1;
+  dialValues[DECAY] = 1;
+  dialValues[SUSTAIN] = 0.8;
+  dialValues[DETUNE_FACTOR] = 1;
 
-  oscpkt::Message msg;
-
-  // TEMPORARY
-  msg.init("/b_allocRead")
-      .pushInt32(0)
-      .pushStr("/Users/kj/Documents/diabetes/200627/samples/sample_59.wav");
-
-  this->sendMessage(msg);
-
-  msg.init("/b_allocRead")
-      .pushInt32(1)
-      .pushStr("/Users/kj/Documents/diabetes/200627/samples/sample_60.wav");
-
-  this->sendMessage(msg);
-  // TEMPORARY
+  // TODO update dials to show values (default values given as midi value?)
 }
 
 /**
@@ -54,14 +61,21 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
  */
 void SynthController::startScSynth() {
   int in = 2, out = 2; // TODO
+
+  oscParser->sendQuit(); // ensure server is not already running!
+  start_synth->setText("Restart server");
+
   QString program =
       "/Applications/SuperCollider/SuperCollider.app/Contents/"
       "Resources/scsynth"; // TODO make into only scsynth (requires $PATH
-                           // setting when not running from terminal!)
+                           // setting when not running from terminal!) TODO make
+                           // into macro/constant (or variable?)
   QStringList args;
   args << "-i" << QString::number(in) << "-o" << QString::number(out) << "-u"
-       << QString::number(OSC_SEND_ADDRESS) << "-H"
-       << "Soundflower (64ch)";
+       << QString::number(OSC_SEND_ADDRESS) << "-R"
+       << "0"
+       << "-H"
+       << "Soundflower (64ch)"; // TODO make variable!
 
   scsynth = new QProcess(this);
   scsynth->setProgram(program);
@@ -72,49 +86,47 @@ void SynthController::startScSynth() {
     exit(-1); // kill or try again?
   }
 
-  // TODO SYNC WITH SERVER
+  // TODO SYNC WITH SERVER ("WAIT FOR BOOT")
   // TODO LOAD BUFFERS FROM CHOSEN PROJECT
+  // oscParser->readBufferFromFile(); TODO
 }
 
 /**
  * Kill scsynth if program is closed
  */
-void SynthController::cleanupOnQuit() {
-  oscpkt::Message msg;
-  msg.init("/quit");
-  this->sendMessage(msg);
+void SynthController::cleanupOnQuit() { oscParser->sendQuit(); }
+
+/**
+ * Midi-osc gate (when "cc" received)
+ * TODO make user definable midi mapping (not with switch-case but for-loop or
+ * map/dictionary)
+ */
+void SynthController::parseCC(int num, int velocity) {
+  findChildren<QDial *>(ccDefinitions[num])[0]->setValue(
+      velocity); // Defined in header-file TODO make user definable
 }
 
+/**
+ * Midi-osc gate (when "note_off" received)
+ */
 void SynthController::sendNoteOff(int num, int velocity) {
   if (keys[num] != -1) {
-    oscpkt::Message msg;
-    msg.init("/n_free").pushInt32(keys[num]); // handle nodeID
-                                              //.pushStr("gate")
-    //.pushInt32(0); // set keys[num] to -1
-    this->sendMessage(msg);
+    oscParser->releaseNode(keys[num]);
     keys[num] = -1;
   }
 }
 
+/**
+ * Midi-osc gate (when "note_on" received)
+ */
 void SynthController::sendNoteOn(int num, int velocity) {
   if (keys[num] == -1) {
-    oscpkt::Message msg;
-
     mtx.lock(); // mutex needed?;
     keys[num] = this->nextNodeID();
-
-    msg.init("/s_new")
-        .pushStr("sine")
-        .pushInt32(
-            keys[num]) // handle nodeID (if keys[num] == -1 then generate node)
-        .pushInt32(1)
-        .pushInt32(0)
-        .pushStr("freq")
-        .pushFloat(num * 10);
-    //.pushStr("attackTime")
-    //.pushFloat(attack);
-    this->sendMessage(msg);
-    mtx.unlock(); // mutex needed?
+    dialValues[FREQ] = num * 10; // TODO change!
+    oscParser->createNewSynth(keys[num], SYNTH_NAME,
+                              dialValues); // TODO change sine...
+    mtx.unlock();                          // mutex needed?
   }
 }
 
@@ -124,33 +136,12 @@ void SynthController::sendNoteOn(int num, int velocity) {
 void SynthController::valueChanged(int idx) {
   QObject *sender = QObject::sender();
 
-  oscpkt::Message msg;
-  //  msg.init(std::string("/n_set"))
-  //        .pushInt32(1005)
-  //        .pushStr(std::string(sender->objectName().toLocal8Bit().data()))
-  //        .pushFloat();
-  if (std::string(sender->objectName().toLocal8Bit().data()) == "attack")
-    attack = 5.f * (float(idx) / 127.f);
-  this->sendMessage(msg);
+  dialValues[sender->objectName()] =
+      linearConversion(idx, rangeMap[sender->objectName()]);
+  // oscParser->setParameterFloat(); TODO
 }
 
 /**
- * Send osc message
+ * Keep track of node ids
  */
-void SynthController::sendMessage(oscpkt::Message msg) {
-  packet_writer.init().addMessage(msg);
-  socket->writeDatagram(packet_writer.packetData(), packet_writer.packetSize(),
-                        QHostAddress::LocalHost, OSC_SEND_ADDRESS);
-}
-
-/**
- * Handle incoming osc from sc
- */
-void SynthController::oscReady() {
-  while (socket->hasPendingDatagrams()) {
-    QNetworkDatagram datagram = socket->receiveDatagram();
-    qDebug() << datagram.data();
-  }
-}
-
 int SynthController::nextNodeID() { return ++nodeCounter; }

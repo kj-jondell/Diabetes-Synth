@@ -9,10 +9,12 @@ QT += multimedia
 
 HEADERS = Controller.h \
     MidiParser.h \
+    OscParser.h \
     oscpkt/oscpkt.hh
 
 SOURCES = Controller.cpp \
     MidiParser.cpp \
+    OscParser.cpp \
     main.cpp 
 
 FORMS += synthcontroller.ui 
