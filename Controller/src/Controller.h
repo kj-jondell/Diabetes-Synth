@@ -35,7 +35,7 @@ using namespace std;
 #define OSC_ADDRESS 1222      // TODO make into variable..
 #define OSC_SEND_ADDRESS 1234 // TODO make into variable..
 
-#define SYNTH_NAME "sine" // TODO change to diabetes
+#define SYNTH_NAME "DiabetesPanEnvelop" // TODO change to diabetes
 
 // must correspond to objectnames as defined in ui file!
 #define ATTACK "attack"
@@ -44,6 +44,9 @@ using namespace std;
 #define SUSTAIN "sustain"
 #define DETUNE_FACTOR "detune_factor"
 #define FREQ "freq"
+#define BUFFER_NO "buffer_no"
+#define FLUTTER "flutter"
+#define VELOCITY "velocity"
 
 class Controller : public QMainWindow, public Ui::Controller {
 public:
@@ -56,10 +59,11 @@ class SynthController : public Controller {
 
 public:
   explicit SynthController(QWidget *parent = nullptr);
-  float attackValue = 0.1;
-  char *filename = "/Users/kj/Documents/diabetes/200630/samples/"
-                   "sample_%d.wav"; // TODO temporary (variable!)
-  int nodeCounter = 1000;           // start from 1000 as in sclang!
+  QString filename = "/Users/kj/Documents/diabetes/200630/samples/"
+                     "sample_%1.wav"; // TODO temporary (variable!)
+  vector<int> order = {8, 4,  3, 12, 2,  7,  13, 6,
+                       5, 14, 1, 9,  11, 10, 15}; // TODO temporary...
+  int nodeCounter = 1000; // start from 1000 as in sclang!
   int keys[MIDI_KEYS];
 
   void cleanupOnQuit();
@@ -70,12 +74,22 @@ public slots:
   void parseCC(int, int);
 
 private:
+  const QMap<QString, QString> remapNames{{ATTACK, "attackTime"},
+                                          {DECAY, "decayTime"},
+                                          {SUSTAIN, "sustainLevel"},
+                                          {RELEASE, "releaseTime"},
+                                          {DETUNE_FACTOR, "detuneFactor"},
+                                          {BUFFER_NO, "bufferNum"},
+                                          {FLUTTER, "flutter"}};
+
   const QMap<QString, vector<float>> rangeMap{
       {ATTACK, {0.f, 127.f, 0.f, 2.f}},
-      {RELEASE, {0.f, 127.f, 0.f, 2.f}},
-      {DECAY, {0.f, 127.f, 0.f, 2.f}},
-      {SUSTAIN, {0.f, 127.f, 0.f, 2.f}},
-      {DETUNE_FACTOR, {0.f, 127.f, 0.f, 2.f}}};
+      {RELEASE, {0.f, 127.f, 0.1, 2.f}},
+      {DECAY, {0.f, 127.f, 0.1, 2.f}},
+      {SUSTAIN, {0.f, 127.f, 0.1, 1.f}},
+      {BUFFER_NO, {0.f, 255.f, 0.f, 2.f}}, // TODO total num of bufs..
+      {FLUTTER, {0.f, 127.f, 0.0001, 0.001}},
+      {DETUNE_FACTOR, {0.f, 127.f, 1, 1.5}}};
 
   const QMap<int, QString> ccDefinitions{
       {16, ATTACK},
@@ -94,6 +108,7 @@ private:
   OscParser *oscParser;
   QProcess *scsynth;
   mutex mtx; // TODO necessary?
+  int inChannels = 2, outChannels = 2;
 
   void startScSynth();
   int nextNodeID();

@@ -47,11 +47,11 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
  * Initilize parameters (maybe from csv or preset file)
  */
 void SynthController::initParameters() {
-  dialValues[ATTACK] = 0.1;
-  dialValues[RELEASE] = 1;
-  dialValues[DECAY] = 1;
-  dialValues[SUSTAIN] = 0.8;
-  dialValues[DETUNE_FACTOR] = 1;
+  dialValues[remapNames[ATTACK]] = 0.1;
+  dialValues[remapNames[RELEASE]] = 1;
+  dialValues[remapNames[DECAY]] = 1;
+  dialValues[remapNames[SUSTAIN]] = 0.8;
+  dialValues[remapNames[DETUNE_FACTOR]] = 1;
 
   // TODO update dials to show values (default values given as midi value?)
 }
@@ -60,8 +60,6 @@ void SynthController::initParameters() {
  * Starts sc synth process. PID is stored as variable
  */
 void SynthController::startScSynth() {
-  int in = 2, out = 2; // TODO
-
   oscParser->sendQuit(); // ensure server is not already running!
   start_synth->setText("Restart server");
 
@@ -71,7 +69,8 @@ void SynthController::startScSynth() {
                            // setting when not running from terminal!) TODO make
                            // into macro/constant (or variable?)
   QStringList args;
-  args << "-i" << QString::number(in) << "-o" << QString::number(out) << "-u"
+  args << "-i" << QString::number(inChannels) << "-o"
+       << QString::number(outChannels) << "-u"
        << QString::number(OSC_SEND_ADDRESS) << "-R"
        << "0"
        << "-H"
@@ -86,9 +85,14 @@ void SynthController::startScSynth() {
     exit(-1); // kill or try again?
   }
 
-  // TODO SYNC WITH SERVER ("WAIT FOR BOOT")
-  // TODO LOAD BUFFERS FROM CHOSEN PROJECT
-  // oscParser->readBufferFromFile(); TODO
+  if (oscParser->sync()) // wait for boot...
+  {
+    int bufnum = 0;
+    for (auto index : order) // load buffers
+      oscParser->readBufferFromFile(bufnum++,
+                                    QString(filename).arg(index).toStdString());
+    // TODO count done messages and check against order.size()
+  }
 }
 
 /**
@@ -123,7 +127,8 @@ void SynthController::sendNoteOn(int num, int velocity) {
   if (keys[num] == -1) {
     mtx.lock(); // mutex needed?;
     keys[num] = this->nextNodeID();
-    dialValues[FREQ] = num * 10; // TODO change!
+    dialValues[FREQ] = num * 10; // TODO change! (tuning etc..)
+    dialValues[VELOCITY] = velocity;
     oscParser->createNewSynth(keys[num], SYNTH_NAME,
                               dialValues); // TODO change sine...
     mtx.unlock();                          // mutex needed?
@@ -135,9 +140,15 @@ void SynthController::sendNoteOn(int num, int velocity) {
  */
 void SynthController::valueChanged(int idx) {
   QObject *sender = QObject::sender();
+  float newValue = linearConversion(idx, rangeMap[sender->objectName()]);
 
-  dialValues[sender->objectName()] =
-      linearConversion(idx, rangeMap[sender->objectName()]); // TODO exeption...
+  dialValues[remapNames[sender->objectName()]] = newValue; // TODO exeption...
+
+  for (int i = 0; i < MIDI_KEYS; i++)
+    if (keys[i] != -1)
+      oscParser->setParameterFloat(
+          keys[i], remapNames[sender->objectName()].toStdString(), newValue);
+
   // oscParser->setParameterFloat(); TODO
 }
 

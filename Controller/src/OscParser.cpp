@@ -21,7 +21,15 @@ OscParser::~OscParser(void) {}
 void OscParser::receivedMessage() {
   while (socket->hasPendingDatagrams()) {
     QNetworkDatagram datagram = socket->receiveDatagram();
-    qDebug() << datagram.data();
+
+    Message *msg;
+    packetReader.init(datagram.data(), datagram.data().size());
+
+    msg = packetReader.popMessage();
+
+    if (msg->match(SYNCED))
+      synced = true;
+    // else if (msg->match(DONE))
   }
 }
 
@@ -29,9 +37,35 @@ void OscParser::receivedMessage() {
  * Send osc message
  */
 void OscParser::sendMessage(Message msg) {
-  packet_writer.init().addMessage(msg);
-  socket->writeDatagram(packet_writer.packetData(), packet_writer.packetSize(),
+  packetWriter.init().addMessage(msg);
+  socket->writeDatagram(packetWriter.packetData(), packetWriter.packetSize(),
                         QHostAddress::LocalHost, oscSendAddress);
+}
+
+/**
+ * Load synth. Returns true if synced with server, else false!
+ * Sleep time in seconds.
+ */
+bool OscParser::sync(float sleepTime, int maxPolls) {
+  synced = false;
+
+  Message msg;
+  msg.init(SYNC);
+
+  qDebug() << sleepTime << " " << maxPolls;
+
+  int hungCounter = 0;
+  do {
+    this->sendMessage(msg);
+    usleep((int)(sleepTime * 1000 * 1000)); // Qtimer instead?
+
+    QCoreApplication::processEvents(); // use qmutex / qwaitcondition instead?
+                                       // (possible with polling?)
+    if (++hungCounter == maxPolls)
+      break;
+  } while (!synced);
+
+  return synced;
 }
 
 /**
@@ -39,7 +73,7 @@ void OscParser::sendMessage(Message msg) {
  */
 void OscParser::loadSynthDef(string synthDefName) {
   Message msg;
-  msg.init("/d_load").pushStr(synthDefName);
+  msg.init(SYNTHDEF_LOAD).pushStr(synthDefName);
   this->sendMessage(msg);
 }
 
@@ -66,7 +100,7 @@ void OscParser::freeNode(int nodeId) {
  */
 void OscParser::releaseNode(int nodeId) {
   Message msg;
-  msg.init(NODE_SET).pushInt32(nodeId).pushStr("gate").pushInt32(0);
+  msg.init(NODE_SET).pushInt32(nodeId).pushStr(GATE).pushInt32(0);
   this->sendMessage(msg);
 }
 
