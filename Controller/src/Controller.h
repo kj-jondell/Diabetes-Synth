@@ -87,8 +87,8 @@ private:
       {RELEASE, {0.f, 127.f, 0.1, 2.f}},
       {DECAY, {0.f, 127.f, 0.1, 2.f}},
       {SUSTAIN, {0.f, 127.f, 0.1, 1.f}},
-      {BUFFER_NO, {0.f, 255.f, 0.f, 2.f}}, // TODO total num of bufs..
-      {FLUTTER, {0.f, 127.f, 0.0001, 0.001}},
+      {BUFFER_NO, {0.f, 255.f, 0.f, 10.f}}, // TODO total num of bufs..
+      {FLUTTER, {0.f, 127.f, 0.0001, 0.01}},
       {DETUNE_FACTOR, {0.f, 127.f, 1, 1.5}}};
 
   const QMap<int, QString> ccDefinitions{
