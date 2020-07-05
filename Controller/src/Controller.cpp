@@ -47,13 +47,13 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
  * Initilize parameters (maybe from csv or preset file)
  */
 void SynthController::initParameters() {
-  dialValues[remapNames[ATTACK]] = 0.1;
-  dialValues[remapNames[RELEASE]] = 1;
-  dialValues[remapNames[DECAY]] = 1;
-  dialValues[remapNames[SUSTAIN]] = 0.8;
-  dialValues[remapNames[DETUNE_FACTOR]] = 1;
+  QMap<QString, float> defaultValues{
+      // TODO add more presets!
+      {ATTACK, 64},     {RELEASE, 20}, {DECAY, 48},         {SUSTAIN, 100},
+      {BUFFER_NO, 127}, {FLUTTER, 24}, {DETUNE_FACTOR, 127}};
 
-  // TODO update dials to show values (default values given as midi value?)
+  for (auto name : defaultValues.keys())
+    findChildren<QDial *>(name)[0]->setValue(defaultValues[name]);
 }
 
 /**

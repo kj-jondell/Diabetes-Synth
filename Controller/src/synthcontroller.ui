@@ -809,22 +809,28 @@
    </property>
    <widget class="QMenu" name="menuController">
     <property name="title">
-     <string>Controller</string>
+     <string>File</string>
     </property>
     <addaction name="actionOpen_Converter"/>
     <addaction name="actionOpen_settings"/>
+    <addaction name="actionOpen_project"/>
    </widget>
    <addaction name="menuController"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen_Converter">
    <property name="text">
-    <string>Open Converter</string>
+    <string>Open converter</string>
    </property>
   </action>
   <action name="actionOpen_settings">
    <property name="text">
-    <string>Open Settings</string>
+    <string>Open settings</string>
+   </property>
+  </action>
+  <action name="actionOpen_project">
+   <property name="text">
+    <string>Open project</string>
    </property>
   </action>
  </widget>
