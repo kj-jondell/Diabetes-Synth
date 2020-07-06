@@ -39,11 +39,6 @@ The Python code can be freezed and bundled using PyInstaller, with the following
 ```
 pyinstaller Converter.spec
 ``` 
-or
-
-```
-pyinstaller --name="Converter" --windowed --onefile --add-data="ui:ui" --icon="icon.icns" __main__.py
-``` 
 
 ### Notes
 Diasend only allows exporting data from the last 202 days.
