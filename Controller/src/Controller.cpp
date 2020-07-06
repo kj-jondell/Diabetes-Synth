@@ -42,9 +42,29 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
 
   connect(start_synth, &QPushButton::clicked, this,
           &SynthController::startScSynth); // respond to start_synth pressed!
+  connect(open_converter, &QAction::triggered, this,
+          &SynthController::openConverter);
 
   this->initAudioSelection();
   this->initParameters();
+}
+
+/**
+ * Open converter (if exists!)
+ */
+void SynthController::openConverter() {
+  QDir binPath(QApplication::applicationDirPath());
+  binPath.cd("../../Extra");
+  converter = new QProcess(this);
+  converter->start(binPath.path() + "/Converter", QStringList());
+
+  connect(converter,
+          QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+          [=](int exitCode, QProcess::ExitStatus exitStatus) {
+            open_converter->setEnabled(true);
+          });
+
+  open_converter->setEnabled(false);
 }
 
 /**

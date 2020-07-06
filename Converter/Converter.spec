@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['__main__.py'],
-             pathex=['/Users/kj/Documents/projects/diabetes/sketches/converter'],
+             pathex=[],
              binaries=[],
              datas=[('ui', 'ui')],
              hiddenimports=[],
@@ -30,8 +30,12 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False )
+          console=False,
+          icon='icon.icns')
 app = BUNDLE(exe,
-             name='Converter.app',
-             icon=None,
-             bundle_identifier=None)
+     name='Converter.app',
+     icon='icon.icns',
+     bundle_identifier=None,
+     info_plist={
+     'NSHighResolutionCapable': 'True'
+     })

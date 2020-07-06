@@ -5,7 +5,12 @@ from PySide2.QtCore import Signal, Slot, Qt
 import numpy 
 import csv
 from pathlib import Path
-from Settings import Settings
+
+def write_settings(settings_dict, path):
+    with open(path, 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        for value in settings_dict:
+            writer.writerow([value, " "+ settings_dict[value]])
 
 def list_to_string(input_list = []):
     return str(input_list)[1:-1].replace(',', '')
@@ -59,11 +64,11 @@ class Converter():
             project_path = Path(self.settings['output_filename']).parents[1]
             project_path = (project_path/project_path.stem).with_suffix(".dia")
 
-            output_settings = Settings()
-            output_settings.numframes = self.settings['buffer_size']
-            output_settings.filename = self.settings['output_filename'].format('%')
-            output_settings.order = list_to_string(list(numpy.argsort(self.centroids)+1))
-            output_settings.samplerate = self.settings['sample_rate']
-            output_settings.projectname = project_path.stem
+            settings_dict = {}
+            settings_dict['numframes'] = str(self.settings['buffer_size'])
+            settings_dict['filename'] = self.settings['output_filename'].format('%')
+            settings_dict['order'] = list_to_string(list(numpy.argsort(self.centroids)+1))
+            settings_dict['samplerate'] = str(self.settings['sample_rate'])
+            settings_dict['projectname'] = project_path.stem
 
-            output_settings.write_settings(project_path)
+            write_settings(settings_dict, project_path)

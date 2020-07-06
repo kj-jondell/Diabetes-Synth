@@ -1,11 +1,13 @@
 #ifndef OSCPARSER_H
 #define OSCPARSER_H
 #include <QCoreApplication>
+#include <QDir>
 #include <QMap>
 #include <QNetworkDatagram>
 #include <QObject>
 #include <QUdpSocket>
-#include <oscpkt/oscpkt.hh>
+
+#include "oscpkt.hh"
 
 #include <iostream>
 #include <stdio.h>

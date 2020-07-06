@@ -15,7 +15,6 @@
 #include <QStringList>
 
 #include <mutex>
-#include <oscpkt/oscpkt.hh>
 
 #include <iostream>
 #include <stdio.h>
@@ -110,7 +109,7 @@ private:
 
   MidiParser *midiParser;
   OscParser *oscParser;
-  QProcess *scsynth;
+  QProcess *scsynth, *converter;
   mutex mtx; // TODO necessary?
   int inChannels = 0, outChannels = 4, memorySize = 65536;
 
@@ -122,6 +121,7 @@ private:
   void newPort(QString label);
   int getPort();
   void updateKeys(QString parameter, float value);
+  void openConverter();
 
 private slots:
   void valueChanged(int idx); // dials...

@@ -9,13 +9,13 @@ INCLUDEPATH += /usr/local/opt/rtmidi/include
 INCLUDEPATH += /usr/local/opt/boost/include
 INCLUDEPATH += /usr/local/Cellar//python@3.8/3.8.3/Frameworks/Python.framework/Versions/3.8/include/python3.8/
 INCLUDEPATH += /usr/local/opt/pybind11/include
+INCLUDEPATH += ../libs/oscpkt
 
 QT += multimedia 
 
 HEADERS = Controller.h \
     MidiParser.h \
-    OscParser.h \
-    oscpkt/oscpkt.hh
+    OscParser.h 
 
 SOURCES = Controller.cpp \
     MidiParser.cpp \
@@ -31,3 +31,6 @@ QT += widgets network
 LIBS += -framework CoreMIDI -framework CoreAudio -framework CoreFoundation
 DEFINES += __MACOSX_CORE__
 
+BINARY.path = Extra
+BINARY.files = ../libs/Converter
+QMAKE_BUNDLE_DATA += BINARY

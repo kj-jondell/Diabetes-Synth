@@ -850,26 +850,26 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen_Converter"/>
-    <addaction name="actionOpen_settings"/>
-    <addaction name="actionOpen_project"/>
+    <addaction name="open_converter"/>
+    <addaction name="open_settings"/>
+    <addaction name="open_project"/>
    </widget>
    <addaction name="menuController"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionOpen_Converter">
+  <action name="open_converter">
    <property name="text">
-    <string>Open converter</string>
+    <string>Open Converter</string>
    </property>
   </action>
-  <action name="actionOpen_settings">
+  <action name="open_settings">
    <property name="text">
-    <string>Open settings</string>
+    <string>Open Settings</string>
    </property>
   </action>
-  <action name="actionOpen_project">
+  <action name="open_project">
    <property name="text">
-    <string>Open project</string>
+    <string>Open Project</string>
    </property>
   </action>
  </widget>
