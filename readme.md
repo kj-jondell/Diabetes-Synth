@@ -26,13 +26,14 @@ pip3 install scipy numpy soundfile xlrd pyside2 python-dateutil
 ```
 2. Then execute the following command to install and run the program. 
 ```
-git clone https://github.com/kj-jondell/Diabetes-Synth.git ; cd Diabetes-Synth ; python3 -m python
+git clone https://github.com/kj-jondell/Diabetes-Synth.git ; cd Diabetes-Synth ; python3 Converter
 ```
 3. To run the program after installation, simply cd into the python-directory and execute:
 ```
-python3 -m python <controller | converter | synth>
+python3 Converter
 ``` 
-<!-- ### Release page -->
+4. MacOS binaries are also avaiable [here](https://github.com/kj-jondell/Diabetes-Synth/releases/tag/v0.1-alpha)
+
 
 ### Building
 The Python code can be freezed and bundled using PyInstaller, with the following command:
@@ -44,27 +45,15 @@ pyinstaller Converter.spec
 Diasend only allows exporting data from the last 202 days.
 
 ## Wavetable Synthesizer
-More info coming soon...
+The Synthesizer implementation is mostly written in C++ and communicates with SuperCollider through Osc.
 
 ### Dependencies
-* sounddevice
-* python-osc
-* rtmidi
-
-### Running
-1. First make sure all dependencies are installed (using pip):
-```
-pip3 install sounddevice python-osc python-rtmidi
-```
+* SuperCollider (scsynth only)
+* Qt5
 
 ## Usage Examples 
 This synth is used in the following songs:
 * [sc-200322-231835](https://soundcloud.com/k-j-jondell/sc-200322-231835)
 
-## Upcoming
-Instead of using sclang as an intermediary, C++ standalone (with Python bindings) will do all parsing and send osc messages to scsynth straight!
-
 ### NOTE
-`scsynth` must be in $PATH! Add in `~/.bashrc` or `~/.bash_profile` 
-
-
+`scsynth` must be in $PATH! Add in `~/.bashrc` or `~/.bash_profile`. Or installed on Mac (normal installation located in Applications).
