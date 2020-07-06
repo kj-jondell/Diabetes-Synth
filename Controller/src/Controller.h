@@ -1,7 +1,9 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-// #include <QAudioDeviceInfo>
+#include "Tuning.h"
+#undef B0
+
 #include <QDebug>
 #include <QList>
 #include <QMainWindow>
@@ -17,6 +19,8 @@
 
 #include <iostream>
 #include <stdio.h>
+
+#include "rtaudio/RtAudio.h"
 
 #include "MidiParser.h"
 #include "OscParser.h"
@@ -35,7 +39,7 @@ using namespace std;
 #define OSC_ADDRESS 1222      // TODO make into variable..
 #define OSC_SEND_ADDRESS 1234 // TODO make into variable..
 
-#define SYNTH_NAME "DiabetesPanEnvelop" // TODO change to diabetes
+#define SYNTH_NAME "Diabetes"
 
 // must correspond to objectnames as defined in ui file!
 #define ATTACK "attack"
@@ -44,6 +48,7 @@ using namespace std;
 #define SUSTAIN "sustain"
 #define DETUNE_FACTOR "detune_factor"
 #define FREQ "freq"
+#define OUT_BUS "outBus"
 #define BUFFER_NO "buffer_no"
 #define FLUTTER "flutter"
 #define VELOCITY "velocity"
@@ -92,27 +97,31 @@ private:
       {DETUNE_FACTOR, {0.f, 127.f, 1, 1.5}}};
 
   const QMap<int, QString> ccDefinitions{
-      {16, ATTACK},
-      {17, RELEASE},
-      {18, DECAY},
-      {19, SUSTAIN},
-      {21, DETUNE_FACTOR}}; // TODO use bimap from boost
-                            // instead (bi-directional,
-                            // one-to-one...). Make variable that copies from
-                            // this default value map!
+      {16, ATTACK},  {17, RELEASE},      {18, DECAY}, {19, SUSTAIN},
+      {20, FLUTTER}, {21, DETUNE_FACTOR}}; // TODO use bimap from boost
+                                           // instead (bi-directional,
+                                           // one-to-one...). Make variable that
+                                           // copies from this default value
+                                           // map!
   QMap<QString, float>
       dialValues; // store all dial values here! TODO as midi
                   // value and rangemap when sending to scsynth?
+  QMap<QString, int> outputDevices;
 
   MidiParser *midiParser;
   OscParser *oscParser;
   QProcess *scsynth;
   mutex mtx; // TODO necessary?
-  int inChannels = 2, outChannels = 2;
+  int inChannels = 0, outChannels = 4, memorySize = 65536;
 
   void startScSynth();
   int nextNodeID();
   void initParameters();
+  void initAudioSelection();
+  void formatPorts();
+  void newPort(QString label);
+  int getPort();
+  void updateKeys(QString parameter, float value);
 
 private slots:
   void valueChanged(int idx); // dials...

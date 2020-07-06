@@ -1,3 +1,4 @@
+(
 SynthDef.new(
     \Diabetes,
     {
@@ -10,3 +11,13 @@ SynthDef.new(
         Out.ar(outBus, LeakDC.ar(panned));
     }
 ).writeDefFile;
+)
+
+(
+var server = Server.new("Diabetes", NetAddr.new("127.0.0.1", 1234));
+server.options.device = "Soundflower (64ch)";
+server.boot;
+server.waitForBoot({
+    server.sendMsg("d_load", "Diabetes");
+});
+)
