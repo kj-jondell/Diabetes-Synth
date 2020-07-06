@@ -34,6 +34,13 @@ python3 -m python <controller | converter | synth>
 ``` 
 <!-- ### Release page -->
 
+### Building
+The Python code can be freezed and bundled using PyInstaller, with the following command:
+```
+pyinstaller Converter.spec
+``` 
+
+
 ### Notes
 Diasend only allows exporting data from the last 202 days.
 
