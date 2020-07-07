@@ -50,6 +50,7 @@ The Synthesizer implementation is mostly written in C++ and communicates with Su
 ### Dependencies
 * SuperCollider (scsynth only)
 * Qt5
+* RtMidi and RtAudio
 
 ## Usage Examples 
 This synth is used in the following songs:

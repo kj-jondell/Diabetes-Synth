@@ -48,6 +48,14 @@ class Converter():
             pass
         self.progress.hide()
 
+    # Set icon of project (if cocoa package is available)
+    def set_icon(self, file_name):
+        try:
+            from Cocoa import NSImage, NSWorkspace
+            NSWorkspace.sharedWorkspace().setIcon_forFile_options_(NSImage.alloc().initWithContentsOfFile_("icon.icns"), str(file_name), 0)
+        except ModuleNotFoundError:
+            pass
+
     # This slot is called from the Model when it is working...
     @Slot(tuple) #TODO make into dict instead...
     def update_progressbar(self, args):
@@ -62,13 +70,16 @@ class Converter():
     def update_settings(self):
         if self.settings['is_wavetable'] and self.centroids != None:
             project_path = Path(self.settings['output_filename']).parents[1]
-            project_path = (project_path/project_path.stem).with_suffix(".dia")
+            project_setting_name = (project_path/project_path.stem).with_suffix(".dia")
 
             settings_dict = {}
             settings_dict['numframes'] = str(self.settings['buffer_size'])
             settings_dict['filename'] = self.settings['output_filename'].format('%')
             settings_dict['order'] = list_to_string(list(numpy.argsort(self.centroids)+1))
             settings_dict['samplerate'] = str(self.settings['sample_rate'])
-            settings_dict['projectname'] = project_path.stem
+            settings_dict['projectname'] = project_setting_name.stem
 
-            write_settings(settings_dict, project_path)
+            write_settings(settings_dict, project_setting_name)
+
+            self.set_icon(project_path)
+            self.set_icon(project_setting_name)
