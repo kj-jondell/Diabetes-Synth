@@ -2,7 +2,7 @@ from PySide2.QtWidgets import QApplication, QProgressDialog
 from View import View  
 from Model import Model
 from PySide2.QtCore import Signal, Slot, Qt 
-import numpy 
+import numpy, sys
 import csv
 from pathlib import Path
 
@@ -48,13 +48,15 @@ class Converter():
             pass
         self.progress.hide()
 
-    # Set icon of project (if cocoa package is available)
+    # Set icon of project (if cocoa package is available) ONLY WORKS ON MAC OS
     def set_icon(self, file_name):
         try:
             from Cocoa import NSImage, NSWorkspace
-            NSWorkspace.sharedWorkspace().setIcon_forFile_options_(NSImage.alloc().initWithContentsOfFile_("icon.icns"), str(file_name), 0)
+            path = (sys._MEIPASS+"/icon.icns/icon.icns") if hasattr(sys, "_MEIPASS") else "icon.icns"
+            img = NSImage.alloc().initWithContentsOfFile_(str(path))
+            NSWorkspace.sharedWorkspace().setIcon_forFile_options_(img, str(file_name), 0)
         except ModuleNotFoundError:
-            pass
+            pass #silent fail writing icon 
 
     # This slot is called from the Model when it is working...
     @Slot(tuple) #TODO make into dict instead...
@@ -74,7 +76,7 @@ class Converter():
 
             settings_dict = {}
             settings_dict['numframes'] = str(self.settings['buffer_size'])
-            settings_dict['filename'] = self.settings['output_filename'].format('%')
+            settings_dict['filename'] = self.settings['output_filename']
             settings_dict['order'] = list_to_string(list(numpy.argsort(self.centroids)+1))
             settings_dict['samplerate'] = str(self.settings['sample_rate'])
             settings_dict['projectname'] = project_setting_name.stem

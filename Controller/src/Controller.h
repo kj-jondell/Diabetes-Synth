@@ -23,13 +23,12 @@
 
 #include "MidiParser.h"
 #include "OscParser.h"
+#include "Tuning.h"
 #include "ui_synthcontroller.h"
 
 #include <csignal>
 #include <cstdlib>
 #include <unistd.h>
-
-#include <boost/format.hpp>
 
 using namespace std;
 
@@ -40,17 +39,19 @@ using namespace std;
 
 #define SYNTH_NAME "Diabetes"
 
+#define FREQ "freq"
+#define OUT_BUS "outBus"
+#define ORDER_SIZE "orderSize"
+#define VELOCITY "velocity"
+
 // must correspond to objectnames as defined in ui file!
 #define ATTACK "attack"
 #define RELEASE "release"
 #define DECAY "decay"
 #define SUSTAIN "sustain"
 #define DETUNE_FACTOR "detune_factor"
-#define FREQ "freq"
-#define OUT_BUS "outBus"
 #define BUFFER_NO "buffer_no"
 #define FLUTTER "flutter"
-#define VELOCITY "velocity"
 
 class Controller : public QMainWindow, public Ui::Controller {
 public:
@@ -63,10 +64,11 @@ class SynthController : public Controller {
 
 public:
   explicit SynthController(QWidget *parent = nullptr);
-  QString filename = "/Users/kj/Documents/diabetes/200630/samples/"
-                     "sample_%1.wav"; // TODO temporary (variable!)
-  vector<int> order = {8, 4,  3, 12, 2,  7,  13, 6,
-                       5, 14, 1, 9,  11, 10, 15}; // TODO temporary...
+  QString filename = "/Users/kj/Documents/Diabetes Synth Projects/200707/"
+                     "samples/sample_%1.wav"; // TODO temporary (variable!)
+  vector<int> order = {8,  28, 21, 3,  25, 13, 23, 1, 22, 29, 9,
+                       2,  17, 5,  10, 7,  12, 4,  6, 27, 26, 19,
+                       20, 14, 16, 24, 30, 18, 15, 11}; // TODO temporary...
   int nodeCounter = 1000; // start from 1000 as in sclang!
   int keys[MIDI_KEYS];
 
@@ -109,6 +111,7 @@ private:
 
   MidiParser *midiParser;
   OscParser *oscParser;
+  Tuning *tuner;
   QProcess *scsynth, *converter;
   mutex mtx; // TODO necessary?
   int inChannels = 0, outChannels = 4, memorySize = 65536;

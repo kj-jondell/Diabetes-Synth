@@ -15,6 +15,7 @@ Controller::~Controller() {}
 SynthController::SynthController(QWidget *parent) : Controller(parent) {
   midiParser = new MidiParser(this);
   oscParser = new OscParser(this, OSC_ADDRESS, OSC_SEND_ADDRESS);
+  tuner = new Tuning();
 
   for (int i = 0; i < MIDI_KEYS; i++) // initilize keys
     keys[i] = -1;
@@ -55,6 +56,7 @@ SynthController::SynthController(QWidget *parent) : Controller(parent) {
 void SynthController::openConverter() {
   QDir binPath(QApplication::applicationDirPath());
   binPath.cd("../../Extra");
+
   converter = new QProcess(this);
   converter->start(binPath.path() + "/Converter", QStringList());
 
@@ -193,10 +195,12 @@ void SynthController::sendNoteOn(int num, int velocity) {
   if (keys[num] == -1) {
     mtx.lock(); // mutex needed?;
     keys[num] = this->nextNodeID();
-    dialValues[FREQ] = num; // TODO change! (tuning etc..)
+    dialValues[FREQ] =
+        tuner->getFreqFromMIDI(num); // TODO change! (tuning etc..)
     // fix tuning...
     dialValues[VELOCITY] = velocity;
     dialValues[OUT_BUS] = this->getPort();
+    dialValues[ORDER_SIZE] = order.size(); // TODO Change!
     oscParser->createNewSynth(keys[num], SYNTH_NAME,
                               dialValues); // TODO change sine...
     mtx.unlock();                          // mutex needed?
