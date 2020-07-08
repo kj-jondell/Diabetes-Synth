@@ -29,9 +29,20 @@ void OscParser::receivedMessage() {
 
     if (msg->match(SYNCED))
       synced = true;
-    // else if (msg->match(DONE))
+    else if (msg->match(DONE))
+      doneCounter++;
   }
 }
+
+/**
+ * Send osc message
+ */
+void OscParser::resetCounter() { doneCounter = 0; }
+
+/**
+ * Send osc message
+ */
+int OscParser::getCounter() { return doneCounter; }
 
 /**
  * Send osc message
@@ -51,8 +62,6 @@ bool OscParser::sync(float sleepTime, int maxPolls) {
 
   Message msg;
   msg.init(SYNC);
-
-  qDebug() << sleepTime << " " << maxPolls;
 
   int hungCounter = 0;
   do {
@@ -132,6 +141,15 @@ void OscParser::setParameterFloat(int nodeId, string parameterName,
                                   float value) {
   Message msg;
   msg.init(NODE_SET).pushInt32(nodeId).pushStr(parameterName).pushFloat(value);
+  this->sendMessage(msg);
+}
+
+/**
+ * Free all buffers
+ */
+void OscParser::freeBuffer(int nodeId) {
+  Message msg;
+  msg.init(BUFFER_FREE).pushInt32(nodeId);
   this->sendMessage(msg);
 }
 

@@ -11,6 +11,8 @@ INCLUDEPATH += ../libs/oscpkt
 HEADERS = Controller.h \
     MidiParser.h \
     Tuning.h \
+    CApplication.h \
+    CSVReader.h \
     OscParser.h 
 
 SOURCES = Controller.cpp \

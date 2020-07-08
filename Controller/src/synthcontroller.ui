@@ -6,9 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>465</width>
-    <height>427</height>
+    <width>463</width>
+    <height>420</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>463</width>
+    <height>420</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>463</width>
+    <height>420</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Blood Glucose Level Synth Controller</string>
@@ -600,21 +618,6 @@
        <string>Equal Temperament</string>
       </property>
      </item>
-     <item>
-      <property name="text">
-       <string>Harmonic Series 24</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Bohlen-Pierce</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Meantone, 1/5 Pythagorean Comma</string>
-      </property>
-     </item>
     </widget>
     <widget class="QLabel" name="label_7">
      <property name="geometry">
@@ -725,7 +728,7 @@
     </widget>
     <widget class="QSpinBox" name="root_freq">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -742,12 +745,12 @@
       <number>660</number>
      </property>
      <property name="value">
-      <number>220</number>
+      <number>440</number>
      </property>
     </widget>
-    <widget class="QSpinBox" name="octave">
+    <widget class="QSpinBox" name="degree">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -758,13 +761,13 @@
       </rect>
      </property>
      <property name="minimum">
-      <number>-3</number>
+      <number>20</number>
      </property>
      <property name="maximum">
-      <number>3</number>
+      <number>90</number>
      </property>
      <property name="value">
-      <number>0</number>
+      <number>69</number>
      </property>
     </widget>
     <widget class="QLabel" name="label_19">
@@ -782,7 +785,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Octave</string>
+      <string>Degree</string>
      </property>
     </widget>
    </widget>
@@ -842,7 +845,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>465</width>
+     <width>463</width>
      <height>22</height>
     </rect>
    </property>

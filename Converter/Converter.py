@@ -76,7 +76,7 @@ class Converter():
 
             settings_dict = {}
             settings_dict['numframes'] = str(self.settings['buffer_size'])
-            settings_dict['filename'] = self.settings['output_filename']
+            settings_dict['filename'] = self.settings['output_filename'].format("%1")
             settings_dict['order'] = list_to_string(list(numpy.argsort(self.centroids)+1))
             settings_dict['samplerate'] = str(self.settings['sample_rate'])
             settings_dict['projectname'] = project_setting_name.stem

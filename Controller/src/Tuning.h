@@ -15,15 +15,25 @@ using namespace std;
 class Tuning {
 
 public:
-  Tuning();
+  Tuning(int = EQUAL_TUNING);
   virtual ~Tuning();
   float getFreqFromMIDI(int step, int rootDegree = 69, float rootFreq = 440.f);
   void setTuning(int tuning = EQUAL_TUNING, float degree = 12.f);
 
 private:
-  const vector<float> just{1.f,       16.f / 15.f, 9.f / 8.f,   6.f / 5.f,
-                           5.f / 4.f, 4.f / 3.f,   45.f / 32.f, 3.f / 2.f,
-                           8.f / 5.f, 5.f / 3.f,   9.f / 5.f,   15.f / 8.f};
+  const vector<float> just{1.f,
+                           16.f / 15.f,
+                           9.f / 8.f,
+                           6.f / 5.f,
+                           5.f / 4.f,
+                           4.f / 3.f,
+                           45.f / 32.f,
+                           3.f / 2.f,
+                           8.f / 5.f,
+                           5.f / 3.f,
+                           9.f / 5.f,
+                           15.f / 8.f,
+                           (2.f * PYTHAGOREAN_COMMA)};
 
   vector<float> currentTuning;
   bool justTuning = false;

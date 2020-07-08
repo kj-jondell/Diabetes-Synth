@@ -58,7 +58,7 @@ class View(QMainWindow):
         if chosen_path:
             chosen_path += "/samples"
             Path(chosen_path).mkdir(parents = True, exist_ok = True)
-            settings['output_filename'] = "{}/sample_{}".format(chosen_path, '%1.wav')
+            settings['output_filename'] = "{}/sample_{}".format(chosen_path, '{}.wav')
             return settings 
         else:
             return None

@@ -1,12 +1,12 @@
 #include "Tuning.h"
 
-Tuning::Tuning() { this->setTuning(); }
+Tuning::Tuning(int tuning) { this->setTuning(tuning); }
 Tuning::~Tuning() {}
 
 void Tuning::generateEqualTemperament(float degree) {
   this->currentTuning.clear();
 
-  for (float i = 0.f; i < degree; i++)
+  for (float i = 0.f; i <= degree; i++)
     this->currentTuning.push_back(pow(2.f, i / degree));
 }
 
@@ -14,7 +14,7 @@ float Tuning::getFreqFromMIDI(int step, int rootDegree, float rootFreq) {
   if (step == rootDegree)
     return rootFreq;
   else {
-    float tuningSize = this->currentTuning.size();
+    float tuningSize = this->currentTuning.size() - 1;
     int stepsAway = abs(step - rootDegree),
         octavesAway = stepsAway / ((int)tuningSize),
         degreesAway = stepsAway % ((int)tuningSize);

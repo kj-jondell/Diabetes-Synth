@@ -1,16 +1,21 @@
+#include "CApplication.h"
 #include "Controller.h"
+#include <QFileOpenEvent>
 #include <QObject>
 #include <QtWidgets>
 
 int main(int argc, char *argv[]) {
-  QApplication app(argc, argv);
+  CApplication app(argc, argv);
   app.setApplicationName("Controller");
 
   SynthController controller;
   controller.show();
 
-  QObject::connect(&app, &QApplication::aboutToQuit, &controller,
-                   &SynthController::cleanupOnQuit);
+  CApplication::connect(&app, &CApplication::aboutToQuit, &controller,
+                        &SynthController::cleanupOnQuit);
+
+  CApplication::connect(&app, &CApplication::fileOpen, &controller,
+                        &SynthController::fileOpen);
 
   return app.exec();
 }

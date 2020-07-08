@@ -5,12 +5,14 @@
 #undef B0
 
 #include <QDebug>
+#include <QFileDialog>
 #include <QList>
 #include <QMainWindow>
 #include <QMap>
 #include <QNetworkDatagram>
 #include <QObject>
 #include <QProcess>
+#include <QSpinBox>
 #include <QString>
 #include <QStringList>
 
@@ -21,6 +23,7 @@
 
 #include "rtaudio/RtAudio.h"
 
+#include "CSVReader.h"
 #include "MidiParser.h"
 #include "OscParser.h"
 #include "Tuning.h"
@@ -64,17 +67,14 @@ class SynthController : public Controller {
 
 public:
   explicit SynthController(QWidget *parent = nullptr);
-  QString filename = "/Users/kj/Documents/Diabetes Synth Projects/200707/"
-                     "samples/sample_%1.wav"; // TODO temporary (variable!)
-  vector<int> order = {8,  28, 21, 3,  25, 13, 23, 1, 22, 29, 9,
-                       2,  17, 5,  10, 7,  12, 4,  6, 27, 26, 19,
-                       20, 14, 16, 24, 30, 18, 15, 11}; // TODO temporary...
+
   int nodeCounter = 1000; // start from 1000 as in sclang!
-  int keys[MIDI_KEYS];
 
   void cleanupOnQuit();
+  void setProjectName(QString name = "");
 
 public slots:
+  void fileOpen(QString);
   void sendNoteOn(int, int);
   void sendNoteOff(int, int);
   void parseCC(int, int);
@@ -88,7 +88,7 @@ private:
                                           {BUFFER_NO, "bufferNum"},
                                           {FLUTTER, "flutter"}};
 
-  const QMap<QString, vector<float>> rangeMap{
+  const QMap<QString, vector<float>> defaultRangeMap{
       {ATTACK, {0.f, 127.f, 0.f, 2.f}},
       {RELEASE, {0.f, 127.f, 0.1, 2.f}},
       {DECAY, {0.f, 127.f, 0.1, 2.f}},
@@ -104,19 +104,30 @@ private:
                                            // one-to-one...). Make variable that
                                            // copies from this default value
                                            // map!
+  const QMap<QString, int> TUNING_MAP{{"Just Intonation", JUST_TUNING},
+                                      {"Equal Temperament", EQUAL_TUNING}};
+
+  QMap<QString, vector<float>> rangeMap;
   QMap<QString, float>
       dialValues; // store all dial values here! TODO as midi
                   // value and rangemap when sending to scsynth?
   QMap<QString, int> outputDevices;
+  QMap<QString, QString> settingsDictionary;
 
   MidiParser *midiParser;
   OscParser *oscParser;
+  CSVReader *reader;
   Tuning *tuner;
   QProcess *scsynth, *converter;
   mutex mtx; // TODO necessary?
+  QString projectName = "";
   int inChannels = 0, outChannels = 4, memorySize = 65536;
+  int rootFreqValue = 440, degreeValue = 69;
 
-  void startScSynth();
+  QString filename;
+  vector<int> order;
+  int keys[MIDI_KEYS];
+
   int nextNodeID();
   void initParameters();
   void initAudioSelection();
@@ -124,10 +135,14 @@ private:
   void newPort(QString label);
   int getPort();
   void updateKeys(QString parameter, float value);
-  void openConverter();
+  void killSynth(QString newText);
 
 private slots:
+  void startScSynth();
   void valueChanged(int idx); // dials...
+  void changeTuning(QString newText);
+  void openConverter();
+  void openProject();
 };
 
 #endif

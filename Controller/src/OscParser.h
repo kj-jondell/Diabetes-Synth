@@ -18,6 +18,7 @@
 #define NODE_SET "/n_set"
 #define SYNTHDEF_LOAD "/d_load"
 #define NODE_FREE "/n_free"
+#define BUFFER_FREE "/b_free"
 #define BUFFER_ALLOC_READ "/b_allocRead"
 #define SYNTH_NEW "/s_new"
 #define SYNC "/sync"
@@ -45,9 +46,12 @@ public:
   void setParameterFloat(int nodeId, string parameterName, float value);
   void loadSynthDef(string synthDefName);
   bool sync(float pollWaitTime = 0.5, int maxPolls = 20);
+  void freeBuffer(int nodeId);
+  void resetCounter();
+  int getCounter();
 
 private:
-  int oscAddress, oscSendAddress;
+  int oscAddress, oscSendAddress, doneCounter;
   bool synced;
   QUdpSocket *socket;
   PacketWriter packetWriter;
