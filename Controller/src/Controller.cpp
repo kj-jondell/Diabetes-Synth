@@ -14,7 +14,7 @@ Controller::~Controller() {}
 
 SynthController::SynthController(QWidget *parent) : Controller(parent) {
   midiParser = new MidiParser(this);
-  oscParser = new OscParser(this, OSC_ADDRESS, OSC_SEND_ADDRESS);
+  oscParser = new OscParser(this, OSC_ADDRESS, oscSendAddress);
   tuner = new Tuning(JUST_TUNING);
 
   for (int i = 0; i < MIDI_KEYS; i++) // initilize keys
@@ -97,16 +97,22 @@ void SynthController::fileOpen(QString csvFilename) {
  * Kill synth before starting / loading new project
  */
 void SynthController::killSynth(QString newText) {
+  start_synth->setText(newText);
   if (scsynth != nullptr) // free all buffers before starting new project
   {
     for (auto index : order)
       oscParser->freeBuffer(index);
 
+    oscParser->waitUntilFree(order.size()); // free buffers before quit
+
     oscParser->resetCounter();
     oscParser->sendQuit(); // ensure server is not already running!
+
+    if (!scsynth->waitForFinished())
+      scsynth->kill();
+
     port->setEnabled(false);
   }
-  start_synth->setText(newText);
 }
 
 /**
@@ -206,10 +212,11 @@ void SynthController::initParameters() {
 }
 
 /**
- * Starts sc synth process. PID is stored as variable
+ * Starts sc synth process.
  */
 void SynthController::startScSynth() {
-  killSynth("Restart server");
+  start_synth->setEnabled(false);
+  killSynth("Starting server");
 
   outChannels = outputDevices[devices->currentText()];
 
@@ -222,10 +229,16 @@ void SynthController::startScSynth() {
       "Resources/scsynth"; // TODO make into only scsynth (requires $PATH
                            // setting when not running from terminal!)
                            // TODO make into macro/constant (or variable?)
+
+  oscSendAddress += (rebootToggle = !rebootToggle)
+                        ? 1
+                        : -1; // change oscSendAddress for better stability...
+  oscParser->setSendAddress(oscSendAddress);
+
   QStringList args;
   args << "-i" << QString::number(inChannels) << "-o"
        << QString::number(outChannels) << "-u"
-       << QString::number(OSC_SEND_ADDRESS) << "-R"
+       << QString::number(oscSendAddress) << "-R"
        << "0"
        << "-m" // memsize
        << QString::number(memorySize) << "-H"
@@ -235,28 +248,35 @@ void SynthController::startScSynth() {
   scsynth->setProgram(program);
   scsynth->setArguments(args);
 
-  if (!scsynth->startDetached()) {
-    qDebug() << "failed to start";
-    exit(-1); // kill or try again?
-  }
+  scsynth->start();
 
   if (!port->isEnabled())
     port->setEnabled(true);
 
   formatPorts();
 
-  // TODO change device output formatting
+  scsynth->waitForStarted();
 
-  if (oscParser->sync()) // wait for boot...
+  // TODO change device output formatting
+  bool succesfulStart = false;
+  if ((succesfulStart = oscParser->sync())) // wait for boot...
   {
     int bufnum = 0;
 
     for (auto index : order) // load buffers
       oscParser->readBufferFromFile(bufnum++,
                                     filename.arg(index).toStdString());
-    // TODO count done messages and check against order.size()
-    qDebug() << oscParser->getCounter();
+
+    succesfulStart = oscParser->waitUntilLoaded(order.size());
   }
+
+  if (!succesfulStart)
+    killSynth(
+        "Start server"); // kill if not started server properly buffers properly
+  else
+    start_synth->setText("Restart server");
+
+  start_synth->setEnabled(true);
 }
 
 /**

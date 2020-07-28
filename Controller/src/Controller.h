@@ -37,8 +37,7 @@ using namespace std;
 
 #define MIDI_KEYS 128
 #define MIDI_CHANNELS 16
-#define OSC_ADDRESS 1222      // TODO make into variable..
-#define OSC_SEND_ADDRESS 1234 // TODO make into variable..
+#define OSC_ADDRESS 1222 // TODO make into variable..
 
 #define SYNTH_NAME "Diabetes"
 
@@ -123,6 +122,8 @@ private:
   QString projectName = "";
   int inChannels = 0, outChannels = 4, memorySize = 65536;
   int rootFreqValue = 440, degreeValue = 69;
+  int oscSendAddress = 1234;
+  bool rebootToggle = false;
 
   QString filename;
   vector<int> order;

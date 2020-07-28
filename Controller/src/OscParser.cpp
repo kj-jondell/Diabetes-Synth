@@ -11,6 +11,9 @@ OscParser::OscParser(QObject *parent, int oscAddressIn, int oscAddressOut)
 
   connect(socket, &QUdpSocket::readyRead, this,
           &OscParser::receivedMessage); // listen to port defined by socket
+
+  resetCounter();
+  resetFreeCounter();
 }
 
 OscParser::~OscParser(void) {}
@@ -29,20 +32,16 @@ void OscParser::receivedMessage() {
 
     if (msg->match(SYNCED))
       synced = true;
-    else if (msg->match(DONE))
-      doneCounter++;
+    else if (msg->match(DONE)) {
+      string buffer;
+      msg->arg().popStr(buffer);
+      if (BUFFER_ALLOC_READ == buffer)
+        doneCounter++;
+      else if (BUFFER_FREE == buffer)
+        freeCounter++;
+    }
   }
 }
-
-/**
- * Send osc message
- */
-void OscParser::resetCounter() { doneCounter = 0; }
-
-/**
- * Send osc message
- */
-int OscParser::getCounter() { return doneCounter; }
 
 /**
  * Send osc message
@@ -51,6 +50,23 @@ void OscParser::sendMessage(Message msg) {
   packetWriter.init().addMessage(msg);
   socket->writeDatagram(packetWriter.packetData(), packetWriter.packetSize(),
                         QHostAddress::LocalHost, oscSendAddress);
+}
+
+/**
+ * Wait until n number of buffers has been loaded (or freed)
+ */
+bool OscParser::waitUntilLoaded(int size, bool loaded, float sleepTime,
+                                int maxPolls) {
+  int hungCounter = 0;
+  do {
+    usleep((int)(sleepTime * 1000 * 1000)); // Qtimer instead?
+    QCoreApplication::processEvents(); // use qmutex / qwaitcondition instead?
+                                       // (possible with polling?)
+    if (++hungCounter == maxPolls)
+      break;
+  } while (size != (loaded ? doneCounter : freeCounter));
+
+  return size == (loaded ? doneCounter : freeCounter);
 }
 
 /**

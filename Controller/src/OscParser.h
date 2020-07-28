@@ -46,13 +46,22 @@ public:
   void setParameterFloat(int nodeId, string parameterName, float value);
   void loadSynthDef(string synthDefName);
   bool sync(float pollWaitTime = 0.5, int maxPolls = 20);
+  bool waitUntilLoaded(int size, bool loaded = true, float pollWaitTime = 0.5,
+                       int maxPolls = 20);
+
+  bool waitUntilFree(int size, float sleepTime = 0.5, int maxPolls = 20) {
+    waitUntilLoaded(size, false, sleepTime, maxPolls);
+  } // convenience method for waiting until free
   void freeBuffer(int nodeId);
-  void resetCounter();
-  int getCounter();
+  void resetCounter() { doneCounter = 0; }
+  int getCounter() { return doneCounter; }
+  void resetFreeCounter() { freeCounter = 0; }
+  int getFreeCounter() { return freeCounter; }
+  void setSendAddress(int oscAddressOut) { oscSendAddress = oscAddressOut; }
 
 private:
-  int oscAddress, oscSendAddress, doneCounter;
-  bool synced;
+  int oscAddress, oscSendAddress, doneCounter, freeCounter;
+  bool synced = false;
   QUdpSocket *socket;
   PacketWriter packetWriter;
   PacketReader packetReader;
