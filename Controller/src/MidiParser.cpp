@@ -3,12 +3,14 @@
 void _callback(double delta, vector<unsigned char> *message, void *userData) {
   MidiParser *parser = static_cast<MidiParser *>(userData);
 
-  int channel = (int)message->at(0) & 0xF;
-  int eventType = ((int)message->at(0) & 0xF0) >> 4;
-  int num = (int)message->at(1);
-  int velocity = (int)message->at(2);
+  if (message->size() >= 3) {
+    int channel = (int)message->at(0) & 0xF;
+    int eventType = ((int)message->at(0) & 0xF0) >> 4;
+    int num = (int)message->at(1);
+    int velocity = (int)message->at(2);
 
-  parser->callback(channel, eventType, num, velocity);
+    parser->callback(channel, eventType, num, velocity);
+  }
 }
 
 MidiParser::MidiParser(QObject *parent, int out_port, int out_channel)

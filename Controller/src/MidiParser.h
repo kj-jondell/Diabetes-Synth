@@ -2,6 +2,7 @@
 #define MIDIPARSER_H
 
 #include "RtMidi.h"
+#include <QDebug>
 #include <QObject>
 
 #define CC 0b1011

@@ -118,7 +118,7 @@ private:
   CSVReader *reader;
   Tuning *tuner;
   QProcess *scsynth, *converter;
-  mutex mtx; // TODO necessary?
+  // mutex mtx; // TODO necessary?
   QString projectName = "";
   int inChannels = 0, outChannels = 4, memorySize = 65536;
   int rootFreqValue = 440, degreeValue = 69;

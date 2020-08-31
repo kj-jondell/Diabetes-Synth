@@ -309,7 +309,7 @@ void SynthController::sendNoteOff(int num, int velocity) {
  */
 void SynthController::sendNoteOn(int num, int velocity) {
   if (keys[num] == -1) {
-    mtx.lock(); // mutex needed?;
+    // mtx.lock(); // mutex needed?;
     keys[num] = nextNodeID();
     dialValues[FREQ] = tuner->getFreqFromMIDI(
         num, degreeValue, rootFreqValue); // TODO change! (tuning etc..)
@@ -319,7 +319,7 @@ void SynthController::sendNoteOn(int num, int velocity) {
     dialValues[ORDER_SIZE] = order.size() - 2; // TODO Change!
     oscParser->createNewSynth(keys[num], SYNTH_NAME,
                               dialValues); // TODO change sine...
-    mtx.unlock();                          // mutex needed?
+    // mtx.unlock();                          // mutex needed?
   }
 }
 
