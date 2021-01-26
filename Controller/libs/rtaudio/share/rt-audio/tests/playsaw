@@ -188,7 +188,7 @@ func_exec_program ()
 
   if test -f "$progdir/$program"; then
     # Add our own library path to DYLD_LIBRARY_PATH
-    DYLD_LIBRARY_PATH="/private/tmp/rt-audio-20190517-92349-16wk005/rtaudio-5.1.0/.libs:$DYLD_LIBRARY_PATH"
+    DYLD_LIBRARY_PATH="/private/tmp/rt-audio-20191017-3504-ipwxr8/rtaudio-5.1.0/.libs:$DYLD_LIBRARY_PATH"
 
     # Some systems cannot cope with colon-terminated DYLD_LIBRARY_PATH
     # The second colon is a workaround for a bug in BeOS R4 sed
