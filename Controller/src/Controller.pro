@@ -26,8 +26,8 @@ RESOURCES = resources.qrc
 
 QT += widgets network
 
-BINARY.path = Extra
-BINARY.files = ../libs/Converter
+# BINARY.path = Extra
+# BINARY.files = ../libs/Converter
 QMAKE_BUNDLE_DATA += BINARY
 
 QMAKE_INFO_PLIST = Info.plist

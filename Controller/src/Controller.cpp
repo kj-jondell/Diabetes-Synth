@@ -103,13 +103,14 @@ void SynthController::killSynth(QString newText) {
     for (auto index : order)
       oscParser->freeBuffer(index);
 
-    oscParser->waitUntilFree(order.size()); // free buffers before quit
+    // oscParser->waitUntilFree(order.size()); // free buffers before quit
+    // //TODO NEEDED?
 
     oscParser->resetCounter();
     oscParser->sendQuit(); // ensure server is not already running!
 
-    if (!scsynth->waitForFinished())
-      scsynth->kill();
+    // if (!scsynth->waitForFinished())
+    // scsynth->kill();
 
     port->setEnabled(false);
   }
@@ -224,11 +225,9 @@ void SynthController::startScSynth() {
   if (outputDevice == "Built-in Output")
     outputDevice = "Built-in"; // hack needed by scsynth
 
-  QString program =
-      "/Applications/SuperCollider/SuperCollider.app/Contents/"
-      "Resources/scsynth"; // TODO make into only scsynth (requires $PATH
-                           // setting when not running from terminal!)
-                           // TODO make into macro/constant (or variable?)
+  QString program = "scsynth"; // TODO make into only scsynth (requires $PATH
+                               // setting when not running from terminal!)
+                               // TODO make into macro/constant (or variable?)
 
   oscSendAddress += (rebootToggle = !rebootToggle)
                         ? 1
