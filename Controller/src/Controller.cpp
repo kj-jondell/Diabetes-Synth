@@ -170,10 +170,12 @@ void SynthController::openConverter() {
 void SynthController::initAudioSelection() {
   RtAudio audio;
   RtAudio::DeviceInfo info;
+  vector<unsigned int>deviceIDs = audio.getDeviceIds();
 
-  for (unsigned int i = 0; i < audio.getDeviceCount(); i++) {
-    info = audio.getDeviceInfo(i);
-    if (info.probed && info.outputChannels > 0) {
+  for (unsigned int i = 0; i < deviceIDs.size(); i++) {
+    info = audio.getDeviceInfo(deviceIDs[i]);
+    if (info.outputChannels > 0) {
+    //if (info.probed && info.outputChannels > 0) {
       QString name = QString::fromStdString(info.name).split(": ")[1];
       devices->addItem(name);
 
@@ -222,10 +224,10 @@ void SynthController::startScSynth() {
   outChannels = outputDevices[devices->currentText()];
 
   QString outputDevice = devices->currentText();
-  if (outputDevice == "Built-in Output")
-    outputDevice = "Built-in"; // hack needed by scsynth
+  if (outputDevice == "MacBook Pro Speakers")
+    outputDevice = "MacBook Pro"; // hack needed by scsynth
 
-  QString program = "scsynth"; // TODO make into only scsynth (requires $PATH
+  QString program = "/Applications/SuperCollider.app/Contents/Resources/scsynth"; // TODO make into only scsynth (requires $PATH
                                // setting when not running from terminal!)
                                // TODO make into macro/constant (or variable?)
 
@@ -247,7 +249,7 @@ void SynthController::startScSynth() {
   scsynth->setProgram(program);
   scsynth->setArguments(args);
 
-  scsynth->start();
+  qDebug() << scsynth->startDetached();
 
   if (!port->isEnabled())
     port->setEnabled(true);
@@ -270,8 +272,8 @@ void SynthController::startScSynth() {
   }
 
   if (!succesfulStart)
-    killSynth(
-        "Start server"); // kill if not started server properly buffers properly
+	killSynth(
+		"Start server"); // kill if not started server properly buffers properly
   else
     start_synth->setText("Restart server");
 

@@ -1,12 +1,19 @@
 TEMPLATE = app
 TARGET = Controller
 
-LIBS += -L../libs/rtmidi/lib -lrtmidi
-LIBS += -L../libs/rtaudio/lib -lrtaudio
+LIBS += -L/usr/local/opt/rtmidi/lib -lrtmidi
+LIBS += -L/usr/local/lib -lrtaudio
 
-INCLUDEPATH += ../libs/rtaudio/include
-INCLUDEPATH += ../libs/rtmidi/include
+INCLUDEPATH += /usr/local/include
+INCLUDEPATH += /usr/local/include/rtmidi
+INCLUDEPATH += /usr/local/opt/boost/include
 INCLUDEPATH += ../libs/oscpkt
+
+#LIBS += -L../libs/rtmidi/lib -lrtmidi
+#LIBS += -L../libs/rtaudio/lib -lrtaudio
+#
+#INCLUDEPATH += ../libs/rtaudio/include
+#INCLUDEPATH += ../libs/rtmidi/include
 
 HEADERS = Controller.h \
     MidiParser.h \
