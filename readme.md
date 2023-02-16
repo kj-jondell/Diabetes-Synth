@@ -47,6 +47,8 @@ Diasend only allows exporting data from the last 202 days.
 ## Wavetable Synthesizer
 The Synthesizer implementation is mostly written in C++ and communicates with SuperCollider through Osc.
 
+![image](https://user-images.githubusercontent.com/30523857/219492843-5869a226-cae0-48d1-afd9-320b5cb8602b.png)
+
 ### Dependencies
 * SuperCollider (scsynth only)
 * Qt5
